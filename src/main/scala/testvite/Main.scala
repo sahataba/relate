@@ -7,6 +7,32 @@ import com.raquo.laminar.api.L.{*, given}
 
 import org.scalajs.dom
 
+object Pages {
+  def viewObject(): HtmlElement = {
+    div(
+      h1("View Object"),
+    )
+  }
+
+  def editObject(): HtmlElement = {
+    div(
+      h1("Edit Object"),
+    )
+  }
+
+  def createObject(): HtmlElement = {
+    div(
+      h1("Create Object"),
+    )
+  }
+
+  def search(): HtmlElement = {
+    div(
+      h1("Search"),
+    )
+  }
+}
+
 object Main {
   final class DataItemID
 
@@ -27,8 +53,8 @@ object Main {
 
   def appElement(): HtmlElement = {
     div(
-      h1("Hello Vite!"),
-      renderDataTable(),
+      h1("Relate"),
+      //renderDataTable(),
       ul(
         li("Sum of values: ", child.text <-- allValues.map(_.sum)),
         li("Average value: ", child.text <-- allValues.map(vs => vs.sum / vs.size)),
