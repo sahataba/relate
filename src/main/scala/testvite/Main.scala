@@ -6,7 +6,13 @@ import scala.scalajs.js.JSConverters.*
 import com.raquo.laminar.api.L.{*, given}
 
 import org.scalajs.dom
+import javax.swing.text.html.parser.Entity
 
+type Relation = (Id, Id)
+type Relationships = Set[Relation]
+type Value = String
+type Id = Int
+case class Entity(id: Id)
 object Pages {
   def viewObject(): HtmlElement = {
     div(
@@ -31,6 +37,26 @@ object Pages {
       h1("Search"),
     )
   }
+}
+
+case class ViewObject(entity: Entity) extends Component {
+  def body: HtmlElement = div(
+    h1("View Object with id: ", entity.id),
+  )
+}
+
+case class ViewValue(value: Value) extends Component {
+  def body: HtmlElement = p(value)
+}
+
+case class ViewRelationships(relations: Relationships) extends Component {
+  def body: HtmlElement = div(relations.toList.map(r => ViewRelation(r)))
+}
+
+case class ViewRelation(relation: Relation) extends Component {
+  def body: HtmlElement = div(
+    p(s"${relation._1} -> ${relation._2}"),
+  )
 }
 
 object Main {
