@@ -33,7 +33,6 @@ object Main {
         li("Sum of values: ", child.text <-- allValues.map(_.sum)),
         li("Average value: ", child.text <-- allValues.map(vs => vs.sum / vs.size)),
       ),
-      renderDataGraph(),
     )
   }
 
@@ -93,55 +92,6 @@ object Main {
       },
       strValue.signal --> { valueStr =>
         valueStr.toDoubleOption.foreach(valueUpdater.onNext)
-      },
-    )
-  }
-
-  def renderDataGraph(): HtmlElement = {
-    import typings.chartJs.mod.*
-
-    var optChart: Option[Chart] = None
-
-    canvas(
-      width := "100%",
-      height := "500px",
-
-      onMountUnmountCallback(
-        mount = { nodeCtx =>
-          val ctx = nodeCtx.thisNode.ref // the DOM HTMLCanvasElement
-          val chart = Chart.apply.newInstance2(ctx, new ChartConfiguration {
-            `type` = ChartType.bar
-            data = new ChartData {
-              datasets = js.Array(new ChartDataSets {
-                label = "Value"
-                borderWidth = 1
-              })
-            }
-            options = new ChartOptions {
-              scales = new ChartScales {
-                yAxes = js.Array(new CommonAxe {
-                  ticks = new TickOptions {
-                    beginAtZero = true
-                  }
-                })
-              }
-            }
-          })
-          optChart = Some(chart)
-        },
-        unmount = { thisNode =>
-          for (chart <- optChart)
-            chart.destroy()
-          optChart = None
-        }
-      ),
-
-      dataSignal --> { data =>
-        for (chart <- optChart) {
-          chart.data.labels = data.map(_.label).toJSArray
-          chart.data.datasets.get(0).data = data.map(_.value).toJSArray
-          chart.update()
-        }
       },
     )
   }

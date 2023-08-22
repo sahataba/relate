@@ -6,7 +6,6 @@ val publicProd = taskKey[String]("output directory for `npm run build`")
 lazy val `test-vite` = project
   .in(file("."))
   .enablePlugins(ScalaJSPlugin)
-  .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
   .settings(
     scalaVersion := "3.1.2",
     scalacOptions ++= Seq("-encoding", "utf-8", "-deprecation", "-feature"),
@@ -15,11 +14,6 @@ lazy val `test-vite` = project
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
         .withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("testvite")))
-    },
-
-    externalNpm := {
-      //scala.sys.process.Process(List("npm", "install", "--silent", "--no-audit", "--no-fund"), baseDirectory.value).!
-      baseDirectory.value
     },
 
     libraryDependencies ++= Seq(
