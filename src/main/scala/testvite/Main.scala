@@ -61,6 +61,15 @@ case class ViewRelation(relation: Relation) extends Component {
   )
 }
 
+case class Search(query: String, db: Database) extends Component {
+  def body: HtmlElement = div(
+    h1("Search by ", query),
+    div(
+      db.search(query).map(e => span(s"${e.id} ${e.value}")),
+    ),
+  )
+}
+
 object Main {
   final class DataItemID
 
@@ -92,7 +101,7 @@ object Main {
           child <-- Router.router.currentPageSignal.map {
             case Page.HomePage => div(h1("Relate"))
             case Page.ViewObject(id) => div(ViewObject(Entity(1, "onee", Set((1, 2), (1, 3)))))
-            case Page.Search(query) => div(h1(s"Search by $query"))
+            case Page.Search(query) => Search(query, Database.dummy)
           }
         )
       )
