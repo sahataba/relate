@@ -12,6 +12,7 @@ sealed trait Page
 object Page:
   case class ViewObject(id: Int) extends Page
   case object HomePage extends Page
+  case class Search(query: String) extends Page
 
   implicit val codec: JsonCodec[Page] = DeriveJsonCodec.gen[Page]
 
@@ -27,10 +28,17 @@ object Router:
     pattern = root / "view" / segment[Int] / endOfSegments,
   )
 
+  val searchRoute = Route[Search, String](
+    encode = page => page.query,
+    decode = arg => Search(arg),
+    pattern = root / "search" / segment[String] / endOfSegments,
+  )
+
   val router = new Router[Page](
     routes = List(
       homeRoute,
       viewObjectRoute,
+      searchRoute,
     ),
     getPageTitle = _.toString, // mock page title (displayed in the browser tab next to favicon)
     serializePage = page => page.toJson, // serialize page data for storage in History API log
