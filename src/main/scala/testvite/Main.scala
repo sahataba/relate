@@ -65,7 +65,10 @@ case class Search(query: String, db: Database) extends Component {
   def body: HtmlElement = div(
     h1("Search by ", query),
     div(
-      db.search(query).map(e => span(s"${e.id} ${e.value}")),
+      db.search(query).map(e => a(
+        onClick --> { _ => Router.router.pushState(Page.ViewObject(e.id))},
+        s"${e.id} ${e.value}"
+      )),
     ),
   )
 }
@@ -100,7 +103,11 @@ object Main {
           justifyContent.center,
           child <-- Router.router.currentPageSignal.map {
             case Page.HomePage => div(h1("Relate"))
-            case Page.ViewObject(id) => div(ViewObject(Entity(1, "onee", Set((1, 2), (1, 3)))))
+            case Page.ViewObject(id) => div(
+              Database.dummy.get(id) match {
+                case Some(e) => ViewObject(e)
+                case None => div(h1("Not found"))
+              })
             case Page.Search(query) => Search(query, Database.dummy)
           }
         )
