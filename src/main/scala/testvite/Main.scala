@@ -9,10 +9,10 @@ import org.scalajs.dom
 import javax.swing.text.html.parser.Entity
 
 type Relation = (Id, Id)
-type Relationships = Set[Relation]
+type Relations = Set[Relation]
 type Value = String
 type Id = Int
-case class Entity(id: Id)
+case class Entity(id: Id, value: Value, relations: Relations)
 object Pages {
   def viewObject(): HtmlElement = {
     div(
@@ -42,6 +42,8 @@ object Pages {
 case class ViewObject(entity: Entity) extends Component {
   def body: HtmlElement = div(
     h1("View Object with id: ", entity.id),
+    ViewValue(entity.value),
+    ViewRelations(entity.relations),
   )
 }
 
@@ -49,7 +51,7 @@ case class ViewValue(value: Value) extends Component {
   def body: HtmlElement = p(value)
 }
 
-case class ViewRelationships(relations: Relationships) extends Component {
+case class ViewRelations(relations: Relations) extends Component {
   def body: HtmlElement = div(relations.toList.map(r => ViewRelation(r)))
 }
 
