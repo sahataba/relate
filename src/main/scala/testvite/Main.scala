@@ -81,12 +81,25 @@ object Main {
 
   def appElement(): HtmlElement = {
     div(
-      h1("Relate"),
+      NavBar(),
+      div(
+        height("100vh"),
+        div(
+          marginLeft("2em"),
+          display.flex,
+          flexDirection.row,
+          justifyContent.center,
+          child <-- Router.router.currentPageSignal.map {
+            case Page.HomePage => div(h1("Relate"))
+            case Page.ViewObject(id) => div(ViewObject(Entity(1, "onee", Set((1, 2), (1, 3)))))
+          }
+        )
+      )
       //renderDataTable(),
-      ul(
+      /* ul(
         li("Sum of values: ", child.text <-- allValues.map(_.sum)),
         li("Average value: ", child.text <-- allValues.map(vs => vs.sum / vs.size)),
-      ),
+      ),*/
     )
   }
 

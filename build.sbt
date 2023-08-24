@@ -7,7 +7,7 @@ lazy val `test-vite` = project
   .in(file("."))
   .enablePlugins(ScalaJSPlugin)
   .settings(
-    scalaVersion := "3.1.2",
+    scalaVersion := "3.3.0",
     scalacOptions ++= Seq("-encoding", "utf-8", "-deprecation", "-feature"),
 
     scalaJSUseMainModuleInitializer := true,
@@ -17,7 +17,10 @@ lazy val `test-vite` = project
     },
 
     libraryDependencies ++= Seq(
-      "com.raquo" %%% "laminar" % "0.14.2",
+      "com.raquo" %%% "laminar" % "16.0.0",
+      "com.raquo" %%% "waypoint" % "7.0.0",
+      "dev.zio" %%% "zio-json" % "0.6.0",
+      "com.github.japgolly.scalacss" %%% "core" % "1.0.0",
     ),
 
     publicDev := linkerOutputDirectory((Compile / fastLinkJS).value).getAbsolutePath(),
