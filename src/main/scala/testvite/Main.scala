@@ -72,6 +72,8 @@ case class Search(query: String, db: Database) extends Component {
     ),
     div(
       marginTop("1em"),
+      display.flex,
+      flexDirection.column,
       db.search(query).map(e => a(
         onClick --> { _ => Router.router.pushState(Page.ViewObject(e.id))},
         s"${e.id} ${e.value}"
