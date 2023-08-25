@@ -68,7 +68,13 @@ case class Search(query: String, db: Database) extends Component {
       display.flex,
       flexDirection.row,
       h4(margin("0em"), "Search by"),
-      input(marginLeft("0.5em"), typ := "text", value := query, onInput.mapToValue --> { query => Router.router.pushState(Page.Search(query)) })
+      input(
+        autoFocus(true),
+        marginLeft("0.5em"),
+        typ := "text",
+        value := query,
+        onInput.mapToValue --> { query => Router.router.pushState(Page.Search(query)) }
+      )
     ),
     div(
       marginTop("1em"),
