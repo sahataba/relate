@@ -13,31 +13,6 @@ type Relations = Set[Relation]
 type Value = String
 type Id = Int
 case class Entity(id: Id, value: Value, relations: Relations)
-object Pages {
-  def viewObject(): HtmlElement = {
-    div(
-      h1("View Object"),
-    )
-  }
-
-  def editObject(): HtmlElement = {
-    div(
-      h1("Edit Object"),
-    )
-  }
-
-  def createObject(): HtmlElement = {
-    div(
-      h1("Create Object"),
-    )
-  }
-
-  def search(): HtmlElement = {
-    div(
-      h1("Search"),
-    )
-  }
-}
 
 case class ViewObject(entity: Entity) extends Component {
   def body: HtmlElement = div(
@@ -76,16 +51,20 @@ case class Search(query: String, db: Database) extends Component {
         onInput.mapToValue --> { query => Router.router.pushState(Page.Search(query)) }
       )
     ),
+    SearchResults(db.search(query))
+  )
+}
+
+case class SearchResults(results: List[Entity]) extends Component {
+  def body: HtmlElement =
     div(
       marginTop("1em"),
       display.flex,
       flexDirection.column,
-      db.search(query).map(e => a(
+      results.map(e => a(
         onClick --> { _ => Router.router.pushState(Page.ViewObject(e.id))},
         s"${e.id} ${e.value}"
-      )),
-    ),
-  )
+      )))
 }
 
 object Main {
