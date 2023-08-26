@@ -6,13 +6,8 @@ import scala.scalajs.js.JSConverters.*
 import com.raquo.laminar.api.L.{*, given}
 
 import org.scalajs.dom
-import javax.swing.text.html.parser.Entity
 
-type Relation = (Id, Id)
-type Relations = Set[Relation]
-type Value = String
-type Id = Int
-case class Entity(id: Id, value: Value, relations: Relations)
+
 
 case class ViewObject(entity: Entity) extends Component {
   def body: HtmlElement = div(
