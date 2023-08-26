@@ -13,6 +13,7 @@ case class ViewObject(entity: Entity) extends Component {
     h1("View Object with id: ", entity.id),
     ViewValue(entity.value),
     ViewRelations(entity.relations),
+    ViewReferences(entity.references),
   )
 }
 
@@ -26,7 +27,16 @@ case class ViewValue(value: Value) extends Component {
 case class ViewRelations(relations: Relations) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
+    h3("Relations"),
     relations.toList.map(r => ViewRelation(r))
+  )
+}
+
+case class ViewReferences(references: References) extends Component {
+  def body: HtmlElement = div(
+    roundedBorder,
+    h3("References"),
+    references.toList.map(r => ViewRelation(r))
   )
 }
 
