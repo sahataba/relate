@@ -33,6 +33,13 @@ case class ViewRelation(relation: Relation) extends Component {
 
 case class Search(query: String, db: Database) extends Component {
   def body: HtmlElement = div(
+    SearchQuery(query),
+    SearchResults(db.search(query))
+  )
+}
+
+case class SearchQuery(query: String) extends Component {
+  def body: HtmlElement = div(
     div(
       marginTop("1em"),
       display.flex,
@@ -46,7 +53,6 @@ case class Search(query: String, db: Database) extends Component {
         onInput.mapToValue --> { query => Router.router.pushState(Page.Search(query)) }
       )
     ),
-    SearchResults(db.search(query))
   )
 }
 
