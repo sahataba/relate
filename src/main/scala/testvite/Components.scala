@@ -9,6 +9,7 @@ import org.scalajs.dom
 
 case class ViewObject(entity: Entity) extends Component {
   def body: HtmlElement = div(
+    roundedBorder,
     h1("View Object with id: ", entity.id),
     ViewValue(entity.value),
     ViewRelations(entity.relations),
@@ -16,15 +17,22 @@ case class ViewObject(entity: Entity) extends Component {
 }
 
 case class ViewValue(value: Value) extends Component {
-  def body: HtmlElement = p(value)
+  def body: HtmlElement = p(
+    roundedBorder,
+    value
+  )
 }
 
 case class ViewRelations(relations: Relations) extends Component {
-  def body: HtmlElement = div(relations.toList.map(r => ViewRelation(r)))
+  def body: HtmlElement = div(
+    roundedBorder,
+    relations.toList.map(r => ViewRelation(r))
+  )
 }
 
 case class ViewRelation(relation: Relation) extends Component {
   def body: HtmlElement = div(
+    roundedBorder,
     p(s"${relation._1} -> ${relation._2}"),
   )
 }
@@ -38,6 +46,7 @@ case class Search(query: String, db: Database) extends Component {
 
 case class SearchQuery(query: String) extends Component {
   def body: HtmlElement = div(
+    roundedBorder,
     div(
       marginTop("1em"),
       display.flex,
@@ -57,6 +66,7 @@ case class SearchQuery(query: String) extends Component {
 case class SearchResults(results: List[Entity]) extends Component {
   def body: HtmlElement =
     div(
+      roundedBorder,
       marginTop("1em"),
       display.flex,
       flexDirection.column,
