@@ -75,3 +75,27 @@ case class SearchResults(results: List[Entity]) extends Component {
         s"${e.id} ${e.value}"
       )))
 }
+
+def app(): HtmlElement = {
+    div(
+      NavBar(),
+      div(
+        height("100vh"),
+        div(
+          marginLeft("2em"),
+          display.flex,
+          flexDirection.row,
+          justifyContent.center,
+          child <-- Router.router.currentPageSignal.map {
+            case Page.HomePage => div(h1("Relate"))
+            case Page.ViewObject(id) => div(
+              Database.dummy.get(id) match {
+                case Some(e) => ViewObject(e)
+                case None => div(h1("Not found"))
+              })
+            case Page.Search(query) => Search(query, Database.dummy)
+          }
+        )
+      )
+    )
+  }
