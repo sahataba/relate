@@ -1,6 +1,6 @@
 package testvite
 
-type Relation = (Id, Id)
+case class Relation(from: Id, to: Id)
 type Relations = Set[Relation]
 type Value = String
 type Id = Int

@@ -33,7 +33,7 @@ case class ViewRelations(relations: Relations) extends Component {
 case class ViewRelation(relation: Relation) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
-    p(s"${relation._1} -> ${relation._2}"),
+    p(s"${relation.from} -> ${relation.to}"),
   )
 }
 
