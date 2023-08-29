@@ -7,13 +7,13 @@ import com.raquo.laminar.api.L.{*, given}
 
 import org.scalajs.dom
 
-case class ViewObject(entity: Entity) extends Component {
+case class ViewObject(entity: Entity, db: Database) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
-    h1("View Object with id: ", entity.id),
+    h1("View Object with id: ", entity.id.toString()),
     ViewValue(entity.value),
-    ViewRelations(entity.relations),
-    ViewReferences(entity.references),
+    ViewRelations(entity.relations, db),
+    ViewReferences(entity.references, db),
   )
 }
 
@@ -24,27 +24,36 @@ case class ViewValue(value: Value) extends Component {
   )
 }
 
-case class ViewRelations(relations: Relations) extends Component {
+case class ViewRelations(relations: Relations, db: Database) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("Relations"),
-    relations.toList.map(r => ViewRelation(r))
+    relations.toList.map(r => ViewRelation(r, db))
   )
 }
 
-case class ViewReferences(references: References) extends Component {
+case class ViewReferences(references: References, db: Database) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("References"),
-    references.toList.map(r => ViewRelation(r))
+    references.toList.map(r => ViewRelation(r, db))
   )
 }
 
-case class ViewRelation(relation: Relation) extends Component {
-  def body: HtmlElement = div(
-    roundedBorder,
-    p(s"${relation.from} -> ${relation.to}"),
-  )
+def relationSentence(relation: Relation, db: Database): String = {
+  val from = relation.from match {
+    case id: ValueId => db.get(id).map(e => e.value).getOrElse("not found")
+    case id: RelationId => relationSentence(db.getRelation(id).get, db)//todo .get
+  }
+  val to = relation.to match {
+    case id: ValueId => db.get(id).map(e => e.value).getOrElse("not found")
+    case id: RelationId => relationSentence(db.getRelation(id).get, db)
+  }
+  s"${from} ${relation.kind} ${to}"
+}
+
+case class ViewRelation(relation: Relation, db: Database) extends Component {
+  def body: HtmlElement = p(relationSentence(relation, db))
 }
 
 case class Search(query: String, db: Database) extends Component {
@@ -81,12 +90,16 @@ case class SearchResults(results: List[Entity]) extends Component {
       display.flex,
       flexDirection.column,
       results.map(e => a(
-        onClick --> { _ => Router.router.pushState(Page.ViewObject(e.id))},
+        onClick --> { _ => e.id match {
+          case id: RelationId => 
+          case id: ValueId => Router.router.pushState(Page.ViewObject(id))
+        }},
         s"${e.id} ${e.value}"
       )))
 }
 
 def app(): HtmlElement = {
+    val db = Database.dummy
     div(
       NavBar(),
       div(
@@ -99,11 +112,11 @@ def app(): HtmlElement = {
           child <-- Router.router.currentPageSignal.map {
             case Page.HomePage => div(h1("Relate"))
             case Page.ViewObject(id) => div(
-              Database.dummy.get(id) match {
-                case Some(e) => ViewObject(e)
+              db.get(id) match {
+                case Some(e) => ViewObject(e, db)
                 case None => div(h1("Not found"))
               })
-            case Page.Search(query) => Search(query, Database.dummy)
+            case Page.Search(query) => Search(query, db)
           }
         )
       )
