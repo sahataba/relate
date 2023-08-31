@@ -98,18 +98,25 @@ case class SearchQuery(query: String) extends Component {
 
 case class SearchResults(results: List[Entity]) extends Component {
   def body: HtmlElement =
-    div(
+    table(
       roundedBorder,
-      marginTop("1em"),
-      display.flex,
-      flexDirection.column,
-      results.map(e => a(
-        onClick --> { _ => e.id match {
-          case id: RelationId => 
-          case id: ValueId => Router.router.pushState(Page.ViewObject(id))
-        }},
-        s"${e.id} ${e.value}"
-      )))
+      tbody(
+        marginTop("1em"),
+        results.map(e =>
+          tr(
+            td(
+              aLink,
+              onClick --> { _ => e.id match {
+                case id: RelationId => 
+                case id: ValueId => Router.router.pushState(Page.ViewObject(id))
+              }},
+              s"${e.id}"
+            ),
+            td(e.value),
+          )
+        )
+      )
+    )
 }
 
 def app(): HtmlElement = {

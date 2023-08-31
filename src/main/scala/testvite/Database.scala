@@ -16,6 +16,7 @@ val entities: Map[Id, Value] = Map(
   13 -> "born in",
   14 -> "musician",
   15 -> "basketball player",
+  16 -> "Sinead",
 )
 
 val relations = Set(
@@ -37,11 +38,12 @@ val relations = Set(
   Relation("16", 9, 14),
   Relation("17", 9, 15),
   Relation("18", 14, 1),
-  Relation("19", 3, 2),
+  Relation("19", 3, 2, "which is"),
   Relation("20", 5, 6),
   Relation("21", 8, 7),
-  Relation("22", 11, 12),
+  Relation("22", 11, 12, "is a"),
   Relation("23", 10 , "22"),
+  Relation("24", 14, 16),
 )
 
 case class Database(private val entities: Map[Id, Value], private val relations: Set[Relation]):
