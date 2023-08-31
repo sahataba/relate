@@ -10,3 +10,8 @@ val roundedBorder = List(
   paddingLeft := "1em",
   paddingRight := "1em",
 )
+
+val aLink = List(
+  textDecoration := "underline",
+  cursor := "pointer",
+)

@@ -40,20 +40,34 @@ case class ViewReferences(references: References, db: Database) extends Componen
   )
 }
 
-def relationSentence(relation: Relation, db: Database): String = {
+def relationSentence(relation: Relation, db: Database): HtmlElement = {
   val from = relation.from match {
-    case id: ValueId => db.get(id).map(e => e.value).getOrElse("not found")
+    case id: ValueId => a(
+      aLink,
+      db.get(id).map(e => e.value).getOrElse("not found"),
+      onClick --> { _ => Router.router.pushState(Page.ViewObject(id))},
+    )
     case id: RelationId => relationSentence(db.getRelation(id).get, db)//todo .get
   }
   val to = relation.to match {
-    case id: ValueId => db.get(id).map(e => e.value).getOrElse("not found")
+    case id: ValueId => a(
+      aLink,
+      db.get(id).map(e => e.value).getOrElse("not found"),
+      onClick --> { _ => Router.router.pushState(Page.ViewObject(id))},
+    )
     case id: RelationId => relationSentence(db.getRelation(id).get, db)
   }
-  s"${from} ${relation.kind} ${to}"
+  div(
+    display.flex,
+    flexDirection.row,
+    from,
+    span(marginLeft("1em"), marginRight("1em"),  s"${relation.kind}"),
+    to
+  )
 }
 
 case class ViewRelation(relation: Relation, db: Database) extends Component {
-  def body: HtmlElement = p(relationSentence(relation, db))
+  def body: HtmlElement = relationSentence(relation, db)
 }
 
 case class Search(query: String, db: Database) extends Component {

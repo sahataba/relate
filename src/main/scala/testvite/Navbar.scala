@@ -14,23 +14,21 @@ final case class NavBar() extends Component {
       fontSize("18px"),
       navLink("Home", HomePage),
       navLink("Object", ViewObject(1)),
-      navLink("Search", Search("aa")),
+      navLink("Search", Search("")),
     )
 
   private def navLink(
     text: String,
     page: Page
-  ): Div = {
+  ): HtmlElement = {
     val $isActive =
       Router.router.currentPageSignal.map { currentPage =>
         currentPage == page
       }
-    div(
+    a(
       cursor.pointer,
       text,
-      onClick --> { _ =>
-        Router.router.pushState(page)
-      },
+      onClick --> { _ => Router.router.pushState(page)},
       cls <-- $isActive.map(CSS.navLink(_)).map(_.htmlClass)
     )
   }
