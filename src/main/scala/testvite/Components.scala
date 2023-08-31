@@ -145,10 +145,11 @@ def app(): HtmlElement = {
           child <-- Router.router.currentPageSignal.map {
             case Page.HomePage => div(h1("Relate"))
             case Page.ViewObject(id) => div(
-              dbVar.now().get(id) match {
-                case Some(e) => ViewObject(e, dbVar.now(), removeRelation)
+              child <-- dbVar.signal.map(db => db.get(id) match {
+                case Some(e) => ViewObject(e, db, removeRelation)
                 case None => div(h1("Not found"))
               })
+            )
             case Page.Search(query) => Search(query, dbVar.now())
           }
         )
