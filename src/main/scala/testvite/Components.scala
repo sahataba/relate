@@ -14,6 +14,7 @@ case class ViewObject(entity: Entity, db: Database, removeRelation: (id: Relatio
     ViewValue(entity.value),
     ViewRelations(entity.relations, db, removeRelation),
     ViewReferences(entity.references, db, removeRelation),
+    AddRelation(db, entity.id),
   )
 }
 
@@ -77,6 +78,28 @@ case class ViewRelation(relation: Relation, db: Database, removeRelation: (id: R
         onClick --> { _ => removeRelation(relation.id) }
       )
     )
+}
+
+case class AddRelation(db: Database, from: Id) extends Component {
+  val kindVar = Var("has a")
+  val toVar = Var("")
+  def body: HtmlElement = div(
+    h3("New relation"),
+    div(
+      display.flex,
+      flexDirection.row,
+      span(from.toString()),
+      input(
+        typ := "text",
+        value <-- kindVar.signal,
+        onInput.mapToValue --> { kind => kindVar.update(_ => kind) }
+      ),
+      select(
+        value <-- toVar.signal,
+        db.search("").map(e => option(s"${e.id.toString()} ${e.value}")),
+      )
+    )
+  )
 }
 
 case class Search(query: String, db: Database) extends Component {
