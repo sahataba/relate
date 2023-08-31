@@ -120,7 +120,7 @@ case class SearchResults(results: List[Entity]) extends Component {
 }
 
 def app(): HtmlElement = {
-    val db = Database.dummy
+    val dbVar = Var(Database.dummy)
     div(
       NavBar(),
       div(
@@ -133,11 +133,11 @@ def app(): HtmlElement = {
           child <-- Router.router.currentPageSignal.map {
             case Page.HomePage => div(h1("Relate"))
             case Page.ViewObject(id) => div(
-              db.get(id) match {
-                case Some(e) => ViewObject(e, db)
+              dbVar.now().get(id) match {
+                case Some(e) => ViewObject(e, dbVar.now())
                 case None => div(h1("Not found"))
               })
-            case Page.Search(query) => Search(query, db)
+            case Page.Search(query) => Search(query, dbVar.now())
           }
         )
       )
