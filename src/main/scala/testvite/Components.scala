@@ -7,13 +7,13 @@ import com.raquo.laminar.api.L.{*, given}
 
 import org.scalajs.dom
 
-case class ViewObject(entity: Entity, db: Database) extends Component {
+case class ViewObject(entity: Entity, db: Database, removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h1("View Object with id: ", entity.id.toString()),
     ViewValue(entity.value),
-    ViewRelations(entity.relations, db),
-    ViewReferences(entity.references, db),
+    ViewRelations(entity.relations, db, removeRelation),
+    ViewReferences(entity.references, db, removeRelation),
   )
 }
 
@@ -24,19 +24,19 @@ case class ViewValue(value: Value) extends Component {
   )
 }
 
-case class ViewRelations(relations: Relations, db: Database) extends Component {
+case class ViewRelations(relations: Relations, db: Database, removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("Relations"),
-    relations.toList.map(r => ViewRelation(r, db))
+    relations.toList.map(r => ViewRelation(r, db, removeRelation))
   )
 }
 
-case class ViewReferences(references: References, db: Database) extends Component {
+case class ViewReferences(references: References, db: Database, removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("References"),
-    references.toList.map(r => ViewRelation(r, db))
+    references.toList.map(r => ViewRelation(r, db, removeRelation))
   )
 }
 
@@ -66,8 +66,17 @@ def relationSentence(relation: Relation, db: Database): HtmlElement = {
   )
 }
 
-case class ViewRelation(relation: Relation, db: Database) extends Component {
-  def body: HtmlElement = relationSentence(relation, db)
+case class ViewRelation(relation: Relation, db: Database, removeRelation: (id: RelationId) => Unit) extends Component {
+  def body: HtmlElement =
+    div(
+      display.flex,
+      flexDirection.row,
+      relationSentence(relation, db),
+      button(
+        "X",
+        onClick --> { _ => removeRelation(relation.id) }
+      )
+    )
 }
 
 case class Search(query: String, db: Database) extends Component {
@@ -121,6 +130,9 @@ case class SearchResults(results: List[Entity]) extends Component {
 
 def app(): HtmlElement = {
     val dbVar = Var(Database.dummy)
+    def removeRelation(id: RelationId): Unit = {
+      dbVar.update(_.remove(id))
+    }
     div(
       NavBar(),
       div(
@@ -134,7 +146,7 @@ def app(): HtmlElement = {
             case Page.HomePage => div(h1("Relate"))
             case Page.ViewObject(id) => div(
               dbVar.now().get(id) match {
-                case Some(e) => ViewObject(e, dbVar.now())
+                case Some(e) => ViewObject(e, dbVar.now(), removeRelation)
                 case None => div(h1("Not found"))
               })
             case Page.Search(query) => Search(query, dbVar.now())

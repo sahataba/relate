@@ -63,6 +63,7 @@ case class Database(private val entities: Map[Id, Value], private val relations:
         relations.filter(r => r.to == id).toSet,
       ))
   def getRelation(id: RelationId) = relations.find(r => r.id == id)
+  def remove(id: RelationId): Database = this.copy(relations = relations.filter(r => r.id != id))
 
 object Database:
   val dummy = Database(entities, relations)
