@@ -87,19 +87,27 @@ case class AddRelations(db: Database, from: Id) extends Component {
       from = from,
       kind = "has a",
       to = "")))
+
+  def newRelation(from: Id)(): Unit = {
+    relationsVar.update(relations => relations :+ Relation(
+      id = java.util.UUID.randomUUID().toString(),
+      from = from,
+      kind = "has a",
+      to = ""))
+  }
   def body: HtmlElement = div(
     h3("New relations"),
     div(
       display.flex,
       flexDirection.row,
       child <-- relationsVar.signal.map(relations =>
-        div(relations.map(r => AddRelation(db, r.from)))
+        div(relations.map(r => AddRelation(db, r.from, newRelation(r.to))))
       )
     )
   )
 }
 
-case class AddRelation(db: Database, from: Id) extends Component {
+case class AddRelation(db: Database, from: Id, newRelation: () => Unit) extends Component {
   val kindVar = Var("has a")
   val toVar = Var("")
   def body: HtmlElement = div(
@@ -115,6 +123,10 @@ case class AddRelation(db: Database, from: Id) extends Component {
       value <-- toVar.signal,
       db.search("").map(e => option(s"${e.id.toString()} ${e.value}")),
     ),
+    button(
+      "Add",
+      onClick --> { _ => newRelation() }
+    )
   )
 }
 

@@ -21,6 +21,7 @@ lazy val `test-vite` = project
       "com.raquo" %%% "waypoint" % "7.0.0",
       "dev.zio" %%% "zio-json" % "0.6.0",
       "com.github.japgolly.scalacss" %%% "core" % "1.0.0",
+      ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13)
     ),
 
     publicDev := linkerOutputDirectory((Compile / fastLinkJS).value).getAbsolutePath(),
