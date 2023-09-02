@@ -88,14 +88,12 @@ case class AddRelations(db: Database, from: Id) extends Component {
       kind = "has a",
       to = None)))
 
-  def newRelation(from: Option[Id])(): Unit = {
-    if (from.isDefined) {
-      relationsVar.update(relations => relations :+ EditRelation(
-        id = db.newRelationId(),
-        from = from.get,
-        kind = "has a",
-        to = None))
-    }
+  def newRelation(from: Id): Unit = {
+    relationsVar.update(relations => relations :+ EditRelation(
+      id = db.newRelationId(),
+      from = from,
+      kind = "has a",
+      to = None))
   }
   def body: HtmlElement = div(
     h3("New relations"),
@@ -103,15 +101,15 @@ case class AddRelations(db: Database, from: Id) extends Component {
       display.flex,
       flexDirection.row,
       child <-- relationsVar.signal.map(relations =>
-        div(relations.map(r => AddRelation(db, r.from, newRelation(r.to))))
+        div(relations.map(r => AddRelation(db, r.from, newRelation)))
       )
     )
   )
 }
 
-case class AddRelation(db: Database, from: Id, newRelation: () => Unit) extends Component {
+case class AddRelation(db: Database, from: Id, newRelation: (from: Id) => Unit) extends Component {
   val kindVar = Var("has a")
-  val toVar = Var("")
+  val toVar: Var[Option[Id]] = Var(None)
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
@@ -122,12 +120,22 @@ case class AddRelation(db: Database, from: Id, newRelation: () => Unit) extends 
       onInput.mapToValue --> { kind => kindVar.update(_ => kind) }
     ),
     select(
-      value <-- toVar.signal,
+      value <-- toVar.signal.map(_.map(_.toString()).getOrElse("")),
       db.search("").map(e => option(s"${e.id.toString()} ${e.value}")),
+      onChange.mapToValue --> {v => {
+        println(v)
+        toVar.update(_ => None)
+      }},
     ),
     button(
       "Add",
-      onClick --> { _ => newRelation() }
+      onClick --> { _ => {
+        println(toVar.now())
+        toVar.now() match {
+          case Some(to) => newRelation(to)
+          case None => 
+        }
+      }}
     )
   )
 }
