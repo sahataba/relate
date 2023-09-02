@@ -9,24 +9,28 @@ import typings.std.{CanvasRenderingContext2D, FrameRequestCallback, HTMLCanvasEl
 import scala.scalajs.js.annotation.JSExport
 import scala.scalajs.js.annotation.JSExportAll
 import scala.scalajs.js.annotation.JSExportTopLevel
+import upickle.default.{ReadWriter => RW, macroRW}
+import upickle.default._
 
-@JSExportAll
-@JSExportTopLevel("Node")
-case class Node(name: String, children: js.Array[Node])
-val data = Node("Eve", js.Array(
-  Node("Cain", js.Array()),
-  Node("Seth", js.Array(
-    Node("Enos", js.Array()),
-    Node("Noam", js.Array())
+case class Node(name: String, children: List[Node])
+object Node{
+  implicit val rw: RW[Node] = macroRW
+}
+val data = Node("Eve", List(
+  Node("Cain", List()),
+  Node("Seth", List(
+    Node("Enos", List()),
+    Node("Noam", List())
   )),
-  Node("Abel", js.Array()),
-  Node("Awan", js.Array(
-    Node("Enoch", js.Array())
+  Node("Abel", List()),
+  Node("Awan", List(
+    Node("Enoch", List())
   )),
-  Node("Azura", js.Array())
+  Node("Azura", List())
 ))
 final case class Graph() extends Component {
-  val g = d3Mod.hierarchy(data)
+  val d = write(data)
+  val g = d3Mod.hierarchy(js.JSON.parse(d))
   pprint.pprintln(g)
   //println(g.children.map(_.map(pprint(_))))
   println(g.descendants().map(_.x))

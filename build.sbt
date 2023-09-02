@@ -28,6 +28,7 @@ lazy val `test-vite` = project
       "dev.zio" %%% "zio-json" % "0.6.0",
       "com.github.japgolly.scalacss" %%% "core" % "1.0.0",
       "com.lihaoyi" %%% "pprint" % "0.7.0",
+      "com.lihaoyi" %%% "upickle" % "3.1.2",
       ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13)
     ),
 
