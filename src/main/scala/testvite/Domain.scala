@@ -2,17 +2,13 @@ package testvite
 
 type Concept = String
 type Concepts = List[Concept] //we can store
-type RelationId = String
+case class RelationId(value: Int, kind: "r" = "r")
 case class Relation(id: RelationId, from: Id, to: Id, kind: Concept = "has a")
+case class EditRelation(id: RelationId, from: Id, to: Option[Id], kind: Concept = "has a")
 type Relations = Set[Relation]
 type References = Set[Relation]
 type Value = String
-opaque type ValueId = Int
-extension (a: ValueId) {
-  def value: Int = a
-}
-object ValueId:
-  def apply(id: Int): ValueId = id
+case class ValueId(value: Int)
 type Id = RelationId | ValueId
 case class Entity(id: Id, value: Value, relations: Relations, references: References)
 //relation has a id

@@ -82,18 +82,20 @@ case class ViewRelation(relation: Relation, db: Database, removeRelation: (id: R
 
 case class AddRelations(db: Database, from: Id) extends Component {
   val relationsVar = Var(List(
-    Relation(
-      id = java.util.UUID.randomUUID().toString(),
+    EditRelation(
+      id = db.newRelationId(),
       from = from,
       kind = "has a",
-      to = "")))
+      to = None)))
 
-  def newRelation(from: Id)(): Unit = {
-    relationsVar.update(relations => relations :+ Relation(
-      id = java.util.UUID.randomUUID().toString(),
-      from = from,
-      kind = "has a",
-      to = ""))
+  def newRelation(from: Option[Id])(): Unit = {
+    if (from.isDefined) {
+      relationsVar.update(relations => relations :+ EditRelation(
+        id = db.newRelationId(),
+        from = from.get,
+        kind = "has a",
+        to = None))
+    }
   }
   def body: HtmlElement = div(
     h3("New relations"),
