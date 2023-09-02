@@ -7,7 +7,12 @@ case class Relation(id: RelationId, from: Id, to: Id, kind: Concept = "has a")
 type Relations = Set[Relation]
 type References = Set[Relation]
 type Value = String
-type ValueId = Int
+opaque type ValueId = Int
+extension (a: ValueId) {
+  def value: Int = a
+}
+object ValueId:
+  def apply(id: Int): ValueId = id
 type Id = RelationId | ValueId
 case class Entity(id: Id, value: Value, relations: Relations, references: References)
 //relation has a id
