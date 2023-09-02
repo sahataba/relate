@@ -204,7 +204,10 @@ def app(): HtmlElement = {
           flexDirection.row,
           justifyContent.center,
           child <-- Router.router.currentPageSignal.map {
-            case Page.HomePage => div(h1("Relate"))
+            case Page.HomePage => div(
+              h1("Relate"),
+              Graph(),
+            )
             case Page.ViewObject(id) => div(
               child <-- dbVar.signal.map(db => db.get(id) match {
                 case Some(e) => ViewObject(e, db, removeRelation)
