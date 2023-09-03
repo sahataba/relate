@@ -89,11 +89,15 @@ case class AddRelations(db: Database, from: Id) extends Component {
       to = None)))
 
   def newRelation(from: Id): Unit = {
-    relationsVar.update(relations => relations :+ EditRelation(
+    relationsVar.update(relations => {
+      val (previous, last) = relations.splitAt(relations.length - 1)
+      val updatedRelations = previous :+ last.head.copy(to = Some(from))
+      updatedRelations :+ EditRelation(
       id = db.newRelationId(),
       from = from,
       kind = "has a",
-      to = None))
+      to = None)
+    })
   }
   def body: HtmlElement = div(
     h3("New relations"),
