@@ -10,7 +10,7 @@ import org.scalajs.dom
 case class ViewObject(entity: Entity, db: Database, removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
-    h1("View Object with id: ", entity.id.toString()),
+    h1("View Object with id: ", idToString(entity.id)),
     ViewValue(entity.value),
     ViewRelations(entity.relations, db, removeRelation),
     ViewReferences(entity.references, db, removeRelation),
@@ -113,18 +113,19 @@ case class AddRelation(db: Database, from: Id, newRelation: (from: Id) => Unit) 
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
-    span(from.toString()),
+    span(idToString(from)),
     input(
       typ := "text",
       value <-- kindVar.signal,
       onInput.mapToValue --> { kind => kindVar.update(_ => kind) }
     ),
     select(
-      value <-- toVar.signal.map(_.map(_.toString()).getOrElse("")),
-      db.search("").map(e => option(s"${e.id.toString()} ${e.value}")),
+      value <-- toVar.signal.map(_.map(idToString).getOrElse("")),
+      db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")),
       onChange.mapToValue --> {v => {
-        println(v)
-        toVar.update(_ => None)
+        val newId = Some(stringToId(v))
+        println(newId)
+        toVar.update(_ => newId)
       }},
     ),
     button(
@@ -180,7 +181,7 @@ case class SearchResults(results: List[Entity]) extends Component {
                 case id: RelationId => 
                 case id: ValueId => Router.router.pushState(Page.ViewObject(id))
               }},
-              s"${e.id}"
+              s"${idToString(e.id)}"
             ),
             td(e.value),
           )

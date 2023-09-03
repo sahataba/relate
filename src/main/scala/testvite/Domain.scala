@@ -11,6 +11,18 @@ type Value = String
 case class ValueId(value: Int)
 type Id = RelationId | ValueId
 case class Entity(id: Id, value: Value, relations: Relations, references: References)
+
+def idToString(id: Id): String = id match {
+  case id: RelationId => s"r-${id.value}"
+  case id: ValueId => s"v-${id.value}"
+}
+def stringToId(s: String): Id = {
+  val parts = s.split("-")
+  parts(0) match {
+    case "r" => RelationId(parts(1).toInt)
+    case "v" => ValueId(parts(1).toInt)
+  }
+}
 //relation has a id
 //relation can reference relation or a value
 //entities are groups of relations
