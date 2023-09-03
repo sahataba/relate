@@ -105,19 +105,19 @@ case class AddRelations(db: Database, from: Id) extends Component {
       display.flex,
       flexDirection.row,
       child <-- relationsVar.signal.map(relations =>
-        div(relations.map(r => AddRelation(db, r.from, newRelation)))
+        div(relations.map(r => AddRelation(db, r, newRelation)))
       )
     )
   )
 }
 
-case class AddRelation(db: Database, from: Id, newRelation: (from: Id) => Unit) extends Component {
+case class AddRelation(db: Database, relation: EditRelation, newRelation: (from: Id) => Unit) extends Component {
   val kindVar = Var("has a")
-  val toVar: Var[Option[Id]] = Var(None)
+  val toVar: Var[Option[Id]] = Var(relation.to)
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
-    span(idToString(from)),
+    span(idToString(relation.from)),
     input(
       typ := "text",
       value <-- kindVar.signal,
