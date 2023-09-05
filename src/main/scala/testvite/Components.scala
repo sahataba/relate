@@ -93,14 +93,17 @@ case class AddRelations(db: Database, from: Id) extends Component {
       val (previous, last) = relations.splitAt(relations.length - 1)
       val updatedRelations = previous :+ last.head.copy(to = Some(from))
       updatedRelations :+ EditRelation(
-      id = db.newRelationId(),
+      id = RelationId(Math.max(db.newRelationId().value, relations.map(_.id.value).max + 1)),
       from = from,
       kind = "has a",
       to = None)
     })
   }
+  def saveRelations(): Unit = {
+    relationsVar.now().foreach(println)
+  }
   def body: HtmlElement = div(
-    h3("New relations"),
+    div(display.flex, h3(margin("0em"), "New relations"), button("Save", onClick --> { _ => { saveRelations() }})),
     div(
       display.flex,
       flexDirection.row,
