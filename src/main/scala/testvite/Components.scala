@@ -7,7 +7,7 @@ import com.raquo.laminar.api.L.{*, given}
 
 import org.scalajs.dom
 
-case class ViewObject(entity: Entity, db: Database, removeRelation: (id: RelationId) => Unit) extends Component {
+case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h1("View Object with id: ", idToString(entity.id)),
@@ -25,7 +25,7 @@ case class ViewValue(value: Value) extends Component {
   )
 }
 
-case class ViewRelations(relations: Relations, db: Database, removeRelation: (id: RelationId) => Unit) extends Component {
+case class ViewRelations(relations: Relations, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("Relations"),
@@ -33,7 +33,7 @@ case class ViewRelations(relations: Relations, db: Database, removeRelation: (id
   )
 }
 
-case class ViewReferences(references: References, db: Database, removeRelation: (id: RelationId) => Unit) extends Component {
+case class ViewReferences(references: References, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("References"),
@@ -41,14 +41,15 @@ case class ViewReferences(references: References, db: Database, removeRelation: 
   )
 }
 
-def relationSentence(relation: Relation, db: Database): HtmlElement = {
+def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
+  val db = dbVar.now()
   val from = relation.from match {
     case id: ValueId => a(
       aLink,
       db.get(id).map(e => e.value).getOrElse("not found"),
       onClick --> { _ => Router.router.pushState(Page.ViewObject(id))},
     )
-    case id: RelationId => relationSentence(db.getRelation(id).get, db)//todo .get
+    case id: RelationId => relationSentence(db.getRelation(id).get, dbVar)//todo .get
   }
   val to = relation.to match {
     case id: ValueId => a(
@@ -56,18 +57,19 @@ def relationSentence(relation: Relation, db: Database): HtmlElement = {
       db.get(id).map(e => e.value).getOrElse("not found"),
       onClick --> { _ => Router.router.pushState(Page.ViewObject(id))},
     )
-    case id: RelationId => relationSentence(db.getRelation(id).get, db)
+    case id: RelationId => relationSentence(db.getRelation(id).get, dbVar)
   }
   div(
     display.flex,
     flexDirection.row,
+    idToString(relation.id),
     from,
     span(marginLeft("1em"), marginRight("1em"),  s"${relation.kind}"),
     to
   )
 }
 
-case class ViewRelation(relation: Relation, db: Database, removeRelation: (id: RelationId) => Unit) extends Component {
+case class ViewRelation(relation: Relation, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement =
     div(
       display.flex,
@@ -80,7 +82,8 @@ case class ViewRelation(relation: Relation, db: Database, removeRelation: (id: R
     )
 }
 
-case class AddRelations(db: Database, from: Id) extends Component {
+case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
+  val db = dbVar.now()
   val relationsVar = Var(List(
     EditRelation(
       id = db.newRelationId(),
@@ -90,17 +93,23 @@ case class AddRelations(db: Database, from: Id) extends Component {
 
   def newRelation(from: Id): Unit = {
     relationsVar.update(relations => {
+      val nId = RelationId(Math.max(db.newRelationId().value, relations.map(_.id.value).max + 1))
       val (previous, last) = relations.splitAt(relations.length - 1)
-      val updatedRelations = previous :+ last.head.copy(to = Some(from))
+      val updatedRelations = previous :+ last.head.copy(to = Some(nId))
       updatedRelations :+ EditRelation(
-      id = RelationId(Math.max(db.newRelationId().value, relations.map(_.id.value).max + 1)),
+      id = nId,
       from = from,
       kind = "has a",
       to = None)
     })
   }
   def saveRelations(): Unit = {
-    relationsVar.now().foreach(println)
+    dbVar.update(db => {
+      val edited = relationsVar.now()
+      val (previous, partial) = edited.partition(_.to.isDefined)
+      val (defined, last) = previous.splitAt(previous.length - 1)
+      db.saveRelations((defined ::: last.map(l => l.copy(to = Some(partial.head.from)))).map(r => Relation(r.id, r.from, r.to.get, r.kind)))
+    })
   }
   def body: HtmlElement = div(
     div(display.flex, h3(margin("0em"), "New relations"), button("Save", onClick --> { _ => { saveRelations() }})),
@@ -120,6 +129,7 @@ case class AddRelation(db: Database, relation: EditRelation, newRelation: (from:
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
+    span(idToString(relation.id)),
     span(idToString(relation.from)),
     input(
       typ := "text",
@@ -129,11 +139,7 @@ case class AddRelation(db: Database, relation: EditRelation, newRelation: (from:
     select(
       value <-- toVar.signal.map(_.map(idToString).getOrElse("")),
       db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")),
-      onChange.mapToValue --> {v => {
-        val newId = Some(stringToId(v))
-        println(newId)
-        toVar.update(_ => newId)
-      }},
+      onChange.mapToValue --> {v => newRelation(stringToId(v))},
     ),
     button(
       "Add",
@@ -218,7 +224,7 @@ def app(): HtmlElement = {
             )
             case Page.ViewObject(id) => div(
               child <-- dbVar.signal.map(db => db.get(id) match {
-                case Some(e) => ViewObject(e, db, removeRelation)
+                case Some(e) => ViewObject(e, dbVar, removeRelation)
                 case None => div(h1("Not found"))
               })
             )

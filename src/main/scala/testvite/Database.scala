@@ -63,7 +63,7 @@ case class Database(private val entities: Map[Id, Value], private val relations:
         relations.filter(r => r.to == id).toSet,
       ))
   def getRelation(id: RelationId) = relations.find(r => r.id == id)
-  def saveRelation(relation: Relation): Database = this.copy(relations = relations + relation)
+  def saveRelations(newRelations: List[Relation]): Database = this.copy(relations = relations.concat(newRelations))
   def remove(id: RelationId): Database = this.copy(relations = relations.filter(r => r.id != id))
   def newRelationId(): RelationId = RelationId(this.relations.map(_.id.value).max + 1)
 
