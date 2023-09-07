@@ -4,7 +4,7 @@ import scala.scalajs.js
 import scala.scalajs.js.JSConverters.*
 
 import com.raquo.laminar.api.L.{*, given}
-
+import zio.json._
 import org.scalajs.dom
 
 case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
@@ -204,7 +204,12 @@ case class SearchResults(results: List[Entity]) extends Component {
 }
 
 def app(): HtmlElement = {
-    val dbVar = Var(Database.dummy)
+    val i = dom.window.localStorage.getItem("db")
+    val initial = i.fromJson[Database].getOrElse(Database.dummy)
+    val dbVar = Var(initial)
+    val o = dbVar.signal.map(db => {
+      dom.window.localStorage.setItem("db", db.toJson)
+    }).map(s => span(""))
     def removeRelation(id: RelationId): Unit = {
       dbVar.update(_.remove(id))
     }
@@ -212,6 +217,7 @@ def app(): HtmlElement = {
       NavBar(),
       div(
         height("100vh"),
+        span(child <-- o),//todo
         div(
           marginLeft("2em"),
           display.flex,

@@ -1,4 +1,5 @@
 package testvite
+import zio.json._
 
 val entities: Map[Id, Value] = Map(
   ValueId(1) -> "person",
@@ -69,3 +70,9 @@ case class Database(private val entities: Map[Id, Value], private val relations:
 
 object Database:
   val dummy = Database(entities, relations)
+  given JsonDecoder[RelationId | ValueId] = JsonDecoder[String].map(stringToId)
+  given JsonEncoder[RelationId | ValueId] = JsonEncoder[String].contramap(idToString)
+  given JsonFieldDecoder[RelationId | ValueId] = JsonFieldDecoder[String].map(stringToId)
+  given JsonFieldEncoder[RelationId | ValueId] = JsonFieldEncoder[String].contramap(idToString)
+  given JsonCodec[Relation] = DeriveJsonCodec.gen[Relation]
+  given JsonCodec[Database] = DeriveJsonCodec.gen[Database]

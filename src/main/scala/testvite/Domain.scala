@@ -1,5 +1,7 @@
 package testvite
 
+import zio.json._
+
 type Concept = String
 type Concepts = List[Concept] //we can store
 case class RelationId(value: Int, kind: "r" = "r")
@@ -23,6 +25,31 @@ def stringToId(s: String): Id = {
     case "v" => ValueId(parts(1).toInt)
   }
 }
+def relationIdToString(id: RelationId): String = s"r-${id.value}"
+def stringToRelationId(s: String): RelationId = {
+  val parts = s.split("-")
+  parts(0) match {
+    case "r" => RelationId(parts(1).toInt)
+    case "v" => throw Exception("not a relation id")
+  }
+}
+
+object RelationId:
+  given JsonDecoder[RelationId] = JsonDecoder[String].map(stringToRelationId)
+  given JsonEncoder[RelationId] = JsonEncoder[String].contramap(relationIdToString)
+
+object Id:
+  given JsonDecoder[Id] = JsonDecoder[String].map(stringToId)
+  given JsonEncoder[Id] = JsonEncoder[String].contramap(idToString)
+
+
+//adding values
+//add relations to select
+//think about queries
+//view relation
+//more correct initial example
+
+
 //relation has a id
 //relation can reference relation or a value
 //entities are groups of relations
