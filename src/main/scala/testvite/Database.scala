@@ -1,7 +1,7 @@
 package testvite
 import zio.json._
 
-val entities: Map[Id, Value] = Map(
+val values: Map[Id, Value] = Map(
   ValueId(1) -> "person",
   ValueId(2) -> "michael",
   ValueId(3) -> "first name",
@@ -47,9 +47,9 @@ val relations = Set(
   Relation(RelationId(24), ValueId(14), ValueId(16)),
 )
 
-case class Database(private val entities: Map[Id, Value], private val relations: Set[Relation]):
+case class Database(private val values: Map[Id, Value], private val relations: Set[Relation]):
   def search(query: String): List[Entity] =
-    entities
+    values
       .filter((id, value) => value.contains(query))
       .map((id, value) => Entity(
         id,
@@ -57,7 +57,7 @@ case class Database(private val entities: Map[Id, Value], private val relations:
         relations.filter(r => r.from == id).toSet,
         relations.filter(r => r.to == id).toSet,
       )).toList
-  def get(id: Id): Option[Entity] = entities.get(id).map(value => Entity(
+  def get(id: Id): Option[Entity] = values.get(id).map(value => Entity(
         id,
         value,
         relations.filter(r => r.from == id).toSet,
@@ -69,7 +69,7 @@ case class Database(private val entities: Map[Id, Value], private val relations:
   def newRelationId(): RelationId = RelationId(this.relations.map(_.id.value).max + 1)
 
 object Database:
-  val dummy = Database(entities, relations)
+  val dummy = Database(values, relations)
   given JsonDecoder[RelationId | ValueId] = JsonDecoder[String].map(stringToId)
   given JsonEncoder[RelationId | ValueId] = JsonEncoder[String].contramap(idToString)
   given JsonFieldDecoder[RelationId | ValueId] = JsonFieldDecoder[String].map(stringToId)
