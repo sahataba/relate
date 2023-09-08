@@ -125,6 +125,7 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
 
 case class AddRelation(db: Database, relation: EditRelation, newRelation: (from: Id) => Unit) extends Component {
   val kindVar = Var("has a")
+  val newValueVar: Var[Option[Value]] = Var(None)
   val toVar: Var[Option[Id]] = Var(relation.to)
   val allOptions =
     db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")).concat(
@@ -139,18 +140,35 @@ case class AddRelation(db: Database, relation: EditRelation, newRelation: (from:
       value <-- kindVar.signal,
       onInput.mapToValue --> { kind => kindVar.update(_ => kind) }
     ),
-    select(
-      value <-- toVar.signal.map(_.map(idToString).getOrElse("")),
-      allOptions,
-      onChange.mapToValue --> {v => newRelation(stringToId(v))},
+    div(
+      display.flex,
+      flexDirection.column,
+      input(
+        typ := "text",
+        value <-- newValueVar.signal.map(_.getOrElse("")),
+        onInput.mapToValue --> { newValue => newValueVar.update(_ => if(newValue.isEmpty()) None else Some(newValue)) }
+      ),
+      select(
+        value <-- toVar.signal.map(_.map(idToString).getOrElse("")),
+        allOptions,
+        onChange.mapToValue --> {v => newRelation(stringToId(v))},
+      ),
     ),
     button(
       "Add",
       onClick --> { _ => {
-        println(toVar.now())
-        toVar.now() match {
-          case Some(to) => newRelation(to)
-          case None => 
+        val newValue = newValueVar.now()
+        newValue match {
+          case Some(value) => {
+
+          }
+          case None => {
+            println(toVar.now())
+            toVar.now() match {
+              case Some(to) => newRelation(to)
+              case None => 
+            }
+          }
         }
       }}
     )
