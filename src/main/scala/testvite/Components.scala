@@ -126,6 +126,9 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
 case class AddRelation(db: Database, relation: EditRelation, newRelation: (from: Id) => Unit) extends Component {
   val kindVar = Var("has a")
   val toVar: Var[Option[Id]] = Var(relation.to)
+  val allOptions =
+    db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")).concat(
+      db.getRelations().map(r => option(value := idToString(r.id), s"${idToString(r.id)} ${r.kind}")))
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
@@ -138,7 +141,7 @@ case class AddRelation(db: Database, relation: EditRelation, newRelation: (from:
     ),
     select(
       value <-- toVar.signal.map(_.map(idToString).getOrElse("")),
-      db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")),
+      allOptions,
       onChange.mapToValue --> {v => newRelation(stringToId(v))},
     ),
     button(

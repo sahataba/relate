@@ -48,6 +48,7 @@ val relations = Set(
 )
 
 case class Database(private val values: Map[Id, Value], private val relations: Set[Relation]):
+  def getRelations(): List[Relation] = relations.toList
   def search(query: String): List[Entity] =
     values
       .filter((id, value) => value.contains(query))
