@@ -33,6 +33,14 @@ def stringToRelationId(s: String): RelationId = {
     case "v" => throw Exception("not a relation id")
   }
 }
+def valueIdToString(id: ValueId): String = s"v-${id.value}"
+def stringToValueId(s: String): ValueId = {
+  val parts = s.split("-")
+  parts(0) match {
+    case "v" => ValueId(parts(1).toInt)
+    case "r" => throw Exception("not a value id")
+  }
+}
 
 object RelationId:
   given JsonDecoder[RelationId] = JsonDecoder[String].map(stringToRelationId)

@@ -117,16 +117,17 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
       display.flex,
       flexDirection.row,
       child <-- relationsVar.signal.map(relations =>
-        div(relations.map(r => AddRelation(db, r, newRelation)))
+        div(relations.map(r => AddRelation(dbVar, r, newRelation)))
       )
     )
   )
 }
 
-case class AddRelation(db: Database, relation: EditRelation, newRelation: (from: Id) => Unit) extends Component {
+case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation: (from: Id) => Unit) extends Component {
   val kindVar = Var("has a")
   val newValueVar: Var[Option[Value]] = Var(None)
   val toVar: Var[Option[Id]] = Var(relation.to)
+  val db = dbVar.now()
   val allOptions =
     db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")).concat(
       db.getRelations().map(r => option(value := idToString(r.id), s"${idToString(r.id)} ${r.kind}")))
@@ -160,7 +161,8 @@ case class AddRelation(db: Database, relation: EditRelation, newRelation: (from:
         val newValue = newValueVar.now()
         newValue match {
           case Some(value) => {
-
+            val (valueId, newDb) = dbVar.now().newValue(value)
+            dbVar.update(_ => newDb)
           }
           case None => {
             println(toVar.now())

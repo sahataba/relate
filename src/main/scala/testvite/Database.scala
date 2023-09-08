@@ -1,7 +1,7 @@
 package testvite
 import zio.json._
 
-val values: Map[Id, Value] = Map(
+val values: Map[ValueId, Value] = Map(
   ValueId(1) -> "person",
   ValueId(2) -> "michael",
   ValueId(3) -> "first name",
@@ -47,7 +47,7 @@ val relations = Set(
   Relation(RelationId(24), ValueId(14), ValueId(16)),
 )
 
-case class Database(private val values: Map[Id, Value], private val relations: Set[Relation]):
+case class Database(private val values: Map[ValueId, Value], private val relations: Set[Relation]):
   def getRelations(): List[Relation] = relations.toList
   def search(query: String): List[Entity] =
     values
@@ -58,7 +58,7 @@ case class Database(private val values: Map[Id, Value], private val relations: S
         relations.filter(r => r.from == id).toSet,
         relations.filter(r => r.to == id).toSet,
       )).toList
-  def get(id: Id): Option[Entity] = values.get(id).map(value => Entity(
+  def get(id: ValueId): Option[Entity] = values.get(id).map(value => Entity(
         id,
         value,
         relations.filter(r => r.from == id).toSet,
@@ -68,6 +68,11 @@ case class Database(private val values: Map[Id, Value], private val relations: S
   def saveRelations(newRelations: List[Relation]): Database = this.copy(relations = relations.concat(newRelations))
   def remove(id: RelationId): Database = this.copy(relations = relations.filter(r => r.id != id))
   def newRelationId(): RelationId = RelationId(this.relations.map(_.id.value).max + 1)
+  def newValue(value: Value): (ValueId, Database) = {
+    val valueId = ValueId(values.keys.map(_.value).max + 1)
+    val g = this.copy(values = values + (valueId -> value))
+    (valueId, g)
+  }
 
 object Database:
   val dummy = Database(values, relations)
@@ -75,5 +80,7 @@ object Database:
   given JsonEncoder[RelationId | ValueId] = JsonEncoder[String].contramap(idToString)
   given JsonFieldDecoder[RelationId | ValueId] = JsonFieldDecoder[String].map(stringToId)
   given JsonFieldEncoder[RelationId | ValueId] = JsonFieldEncoder[String].contramap(idToString)
+  given JsonFieldDecoder[ValueId] = JsonFieldDecoder[String].map(stringToValueId)
+  given JsonFieldEncoder[ValueId] = JsonFieldEncoder[String].contramap(valueIdToString)
   given JsonCodec[Relation] = DeriveJsonCodec.gen[Relation]
   given JsonCodec[Database] = DeriveJsonCodec.gen[Database]
