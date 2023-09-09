@@ -227,8 +227,9 @@ case class SearchResults(results: List[Entity]) extends Component {
 }
 
 def app(): HtmlElement = {
-    val i = dom.window.localStorage.getItem("db")
-    val initial = i.fromJson[Database].getOrElse(Database.dummy)
+    val localData = dom.window.localStorage.getItem("db")
+    val initialData = if (localData == null) data else localData
+    val initial = initialData.fromJson[Database].getOrElse(Database.empty)
     val dbVar = Var(initial)
     val o = dbVar.signal.map(db => {
       dom.window.localStorage.setItem("db", db.toJson)
