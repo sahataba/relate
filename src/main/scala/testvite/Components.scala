@@ -258,6 +258,9 @@ def app(): HtmlElement = {
               })
             )
             case Page.Search(query) => Search(query, dbVar.now())
+            case Page.ViewDatabase => pre(
+              child <-- dbVar.signal.map(db => code(display.block, width("0"), js.JSON.stringify(js.JSON.parse(db.toJson), null, 2)))
+            )
           }
         )
       )

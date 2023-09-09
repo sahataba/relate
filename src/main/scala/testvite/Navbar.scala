@@ -15,6 +15,7 @@ final case class NavBar() extends Component {
       navLink("Home", HomePage),
       navLink("Object", ViewObject(ValueId(9))),
       navLink("Search", Search("")),
+      navLink("Database", ViewDatabase),
     )
 
   private def navLink(

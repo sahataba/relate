@@ -13,6 +13,7 @@ object Page:
   case class ViewObject(id: ValueId) extends Page
   case object HomePage extends Page
   case class Search(query: String) extends Page
+  case object ViewDatabase extends Page
   given JsonDecoder[ValueId] = JsonDecoder[Int].map(ValueId.apply)
   given JsonEncoder[ValueId] = JsonEncoder[Int].contramap(a => a.value)
   implicit val codec: JsonCodec[Page] = DeriveJsonCodec.gen[Page]
@@ -22,6 +23,9 @@ object Router:
 
   val homeRoute: Route[Page.HomePage.type, Unit] =
     Route.static(HomePage, root / endOfSegments)
+
+  val viewDatabaseRoute: Route[Page.ViewDatabase.type, Unit] =
+    Route.static(ViewDatabase, root / "database" / endOfSegments)
 
   val viewObjectRoute = Route[ViewObject, Int](
     encode = page => page.id.value,
@@ -40,6 +44,7 @@ object Router:
       homeRoute,
       viewObjectRoute,
       searchRoute,
+      viewDatabaseRoute,
     ),
     getPageTitle = _.toString, // mock page title (displayed in the browser tab next to favicon)
     serializePage = page => page.toJson, // serialize page data for storage in History API log
