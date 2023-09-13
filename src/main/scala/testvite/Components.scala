@@ -66,7 +66,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
     display.flex,
     flexDirection.row,
     from,
-    span(marginLeft("1em"), marginRight("1em"),  s"${relation.kind}"),
+    span(marginLeft("1em"), marginRight("1em"),  s"${relation.predicate}"),
     to
   )
 }
@@ -90,7 +90,7 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
     EditRelation(
       id = db.newRelationId(),
       subject = from,
-      kind = "has a",
+      predicate = "has a",
       `object` = None)))
 
   def newRelation(from: Id): Unit = {
@@ -101,7 +101,7 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
       updatedRelations :+ EditRelation(
       id = nId,
       subject = from,
-      kind = "has a",
+      predicate = "has a",
       `object` = None)
     })
   }
@@ -110,7 +110,7 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
       val edited = relationsVar.now()
       val (previous, partial) = edited.partition(_.`object`.isDefined)
       val (defined, last) = previous.splitAt(previous.length - 1)
-      db.saveRelations((defined ::: last.map(l => l.copy(`object` = Some(partial.head.subject)))).map(r => Relation(r.id, r.subject, r.`object`.get, r.kind)))
+      db.saveRelations((defined ::: last.map(l => l.copy(`object` = Some(partial.head.subject)))).map(r => Relation(r.id, r.subject, r.`object`.get, r.predicate)))
     })
   }
   def body: HtmlElement = div(
@@ -132,7 +132,7 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
   val db = dbVar.now()
   val allOptions =
     db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")).concat(
-      db.getRelations().map(r => option(value := idToString(r.id), s"${idToString(r.id)} ${r.kind}")))
+      db.getRelations().map(r => option(value := idToString(r.id), s"${idToString(r.id)} ${r.predicate}")))
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,

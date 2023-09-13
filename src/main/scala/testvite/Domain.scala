@@ -5,8 +5,8 @@ import zio.json._
 type Concept = String
 type Concepts = List[Concept] //we can store
 case class RelationId(value: Int)
-case class Relation(id: RelationId, subject: Id, `object`: Id, kind: Concept = "has a")
-case class EditRelation(id: RelationId, subject: Id, `object`: Option[Id], kind: Concept = "has a")
+case class Relation(id: RelationId, subject: Id, `object`: Id, predicate: Concept = "has a")
+case class EditRelation(id: RelationId, subject: Id, `object`: Option[Id], predicate: Concept = "has a")
 type Relations = Set[Relation]
 type References = Set[Relation]
 type Value = String
