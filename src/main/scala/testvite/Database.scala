@@ -9,14 +9,14 @@ case class Database(private val values: Map[ValueId, Value], private val relatio
       .map((id, value) => Entity(
         id,
         value,
-        relations.filter(r => r.from == id).toSet,
-        relations.filter(r => r.to == id).toSet,
+        relations.filter(r => r.subject == id).toSet,
+        relations.filter(r => r.`object` == id).toSet,
       )).toList
   def get(id: ValueId): Option[Entity] = values.get(id).map(value => Entity(
         id,
         value,
-        relations.filter(r => r.from == id).toSet,
-        relations.filter(r => r.to == id).toSet,
+        relations.filter(r => r.subject == id).toSet,
+        relations.filter(r => r.`object` == id).toSet,
       ))
   def getRelation(id: RelationId) = relations.find(r => r.id == id)
   def saveRelations(newRelations: List[Relation]): Database = this.copy(relations = relations.concat(newRelations))

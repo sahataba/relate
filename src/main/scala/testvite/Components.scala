@@ -46,7 +46,7 @@ case class ViewReferences(references: References, db: Var[Database], removeRelat
 
 def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
   val db = dbVar.now()
-  val from = relation.from match {
+  val from = relation.subject match {
     case id: ValueId => a(
       aLink,
       db.get(id).map(e => e.value).getOrElse("not found"),
@@ -54,7 +54,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
     )
     case id: RelationId => relationSentence(db.getRelation(id).get, dbVar)//todo .get
   }
-  val to = relation.to match {
+  val to = relation.`object` match {
     case id: ValueId => a(
       aLink,
       db.get(id).map(e => e.value).getOrElse("not found"),
@@ -89,28 +89,28 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
   val relationsVar = Var(List(
     EditRelation(
       id = db.newRelationId(),
-      from = from,
+      subject = from,
       kind = "has a",
-      to = None)))
+      `object` = None)))
 
   def newRelation(from: Id): Unit = {
     relationsVar.update(relations => {
       val nId = RelationId(Math.max(db.newRelationId().value, relations.map(_.id.value).max + 1))
       val (previous, last) = relations.splitAt(relations.length - 1)
-      val updatedRelations = previous :+ last.head.copy(to = Some(nId))
+      val updatedRelations = previous :+ last.head.copy(`object` = Some(nId))
       updatedRelations :+ EditRelation(
       id = nId,
-      from = from,
+      subject = from,
       kind = "has a",
-      to = None)
+      `object` = None)
     })
   }
   def saveRelations(): Unit = {
     dbVar.update(db => {
       val edited = relationsVar.now()
-      val (previous, partial) = edited.partition(_.to.isDefined)
+      val (previous, partial) = edited.partition(_.`object`.isDefined)
       val (defined, last) = previous.splitAt(previous.length - 1)
-      db.saveRelations((defined ::: last.map(l => l.copy(to = Some(partial.head.from)))).map(r => Relation(r.id, r.from, r.to.get, r.kind)))
+      db.saveRelations((defined ::: last.map(l => l.copy(`object` = Some(partial.head.subject)))).map(r => Relation(r.id, r.subject, r.`object`.get, r.kind)))
     })
   }
   def body: HtmlElement = div(
@@ -128,7 +128,7 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
 case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation: (from: Id) => Unit) extends Component {
   val kindVar = Var("has a")
   val newValueVar: Var[Option[Value]] = Var(None)
-  val toVar: Var[Option[Id]] = Var(relation.to)
+  val toVar: Var[Option[Id]] = Var(relation.`object`)
   val db = dbVar.now()
   val allOptions =
     db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")).concat(
@@ -140,7 +140,7 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
       _.readonly := true,
       _.placeholder := "Subject",
       _.showClearIcon := true,
-      value := idToString(relation.from),
+      value := idToString(relation.subject),
     ),
     Input(
       _.placeholder := "Predicate",
