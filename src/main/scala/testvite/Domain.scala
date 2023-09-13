@@ -2,8 +2,6 @@ package testvite
 
 import zio.json._
 
-type Concept = String
-type Concepts = List[Concept] //we can store
 case class URI(value: String)
 case class Relation(subject: URI, `object`: URI | Value, predicate: URI)
 case class EditRelation(subject: Option[URI], `object`: Option[URI | Value], predicate: Option[URI])

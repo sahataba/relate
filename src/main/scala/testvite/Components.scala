@@ -124,10 +124,9 @@ case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
 
 case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation: (from: URI) => Unit) extends Component {
   val relationVar = Var(relation)
-  val newValueVar: Var[Option[Value]] = Var(None)
-  val toVar: Var[Option[Id]] = Var(relation.`object`)
   val db = dbVar.now()
-  val allOptions = db.getRelations().map(r => option(value := r.toString(), r.toString()))
+  val allIds = db.getRelations().map(r => List(r.subject, r.`object`, r.predicate)).flatten
+  val allOptions = allIds.map(id => option(value := idToString(id), idToString(id)))
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
@@ -150,12 +149,12 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
       Input(
         _.placeholder := "Object",
         _.showClearIcon := true,
-        _.value <-- newValueVar.signal.map(_.map(idToString).getOrElse("")),
-        onInput.mapToValue --> { value => relationVar.update(_.copy(`object` = if (value.isEmpty()) None else Some(stringToRelationId(value)))) }
+        value <-- relationVar.signal.map(_.`object`.map(idToString).getOrElse("")),
+        onInput.mapToValue --> { value => relationVar.update(_.copy(`object` = if (value.isEmpty()) None else Some(stringToId(value)))) }
         //onInput.mapToValue --> { newValue => newValueVar.update(_ => if(newValue.isEmpty()) None else Some(newValue)) }
       ),
       select(
-        value <-- toVar.signal.map(_.map(idToString).getOrElse("")),
+        value <-- relationVar.signal.map(_.`object`.map(idToString).getOrElse("")),
         allOptions,
         onChange.mapToValue --> {v => newRelation(stringToRelationId(v))},
       ),
@@ -163,7 +162,6 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
     button(
       "Add",
       onClick --> { _ => {
-        println(toVar.now())
         val relation = relationVar.now()
         if (relation.subject.isDefined) {
           newRelation(relation.subject.get)
