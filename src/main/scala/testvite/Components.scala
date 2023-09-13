@@ -137,8 +137,12 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
-    span(idToString(relation.id)),
-    span(idToString(relation.from)),
+    Input(
+      _.readonly := true,
+      _.placeholder := "Subject",
+      _.showClearIcon := true,
+      value := idToString(relation.from),
+    ),
     Input(
       _.placeholder := "Predicate",
       _.showClearIcon := true,
