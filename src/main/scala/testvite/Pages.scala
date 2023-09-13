@@ -10,7 +10,7 @@ import java.util.UUID
 sealed trait Page
 
 object Page:
-  case class ViewObject(id: ValueId) extends Page
+  case class View(id: ValueId) extends Page
   case object HomePage extends Page
   case class Search(query: String) extends Page
   case object ViewDatabase extends Page
@@ -27,9 +27,9 @@ object Router:
   val viewDatabaseRoute: Route[Page.ViewDatabase.type, Unit] =
     Route.static(ViewDatabase, root / "database" / endOfSegments)
 
-  val viewObjectRoute = Route[ViewObject, Int](
+  val viewObjectRoute = Route[View, Int](
     encode = page => page.id.value,
-    decode = arg => ViewObject(ValueId(arg)),
+    decode = arg => View(ValueId(arg)),
     pattern = root / "view" / segment[Int] / endOfSegments,
   )
 

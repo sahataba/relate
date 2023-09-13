@@ -13,7 +13,7 @@ import be.doeraene.webcomponents.ui5.*
 case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
-    h1("View Object with id: ", idToString(entity.id)),
+    h1("View: ", idToString(entity.id)),
     ViewValue(entity.value),
     ViewRelations(entity.relations, db, removeRelation),
     ViewReferences(entity.references, db, removeRelation),
@@ -50,7 +50,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
     case id: ValueId => a(
       aLink,
       db.get(id).map(e => e.value).getOrElse("not found"),
-      onClick --> { _ => Router.router.pushState(MyPage.ViewObject(id))},
+      onClick --> { _ => Router.router.pushState(MyPage.View(id))},
     )
     case id: RelationId => relationSentence(db.getRelation(id).get, dbVar)//todo .get
   }
@@ -58,14 +58,13 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
     case id: ValueId => a(
       aLink,
       db.get(id).map(e => e.value).getOrElse("not found"),
-      onClick --> { _ => Router.router.pushState(MyPage.ViewObject(id))},
+      onClick --> { _ => Router.router.pushState(MyPage.View(id))},
     )
     case id: RelationId => relationSentence(db.getRelation(id).get, dbVar)
   }
   div(
     display.flex,
     flexDirection.row,
-    idToString(relation.id),
     from,
     span(marginLeft("1em"), marginRight("1em"),  s"${relation.kind}"),
     to
@@ -224,7 +223,7 @@ case class SearchResults(results: List[Entity]) extends Component {
               aLink,
               onClick --> { _ => e.id match {
                 case id: RelationId => 
-                case id: ValueId => Router.router.pushState(MyPage.ViewObject(id))
+                case id: ValueId => Router.router.pushState(MyPage.View(id))
               }},
               s"${idToString(e.id)}"
             ),
@@ -261,7 +260,7 @@ def app(): HtmlElement = {
               h1("Relate"),
               Graph(),
             )
-            case MyPage.ViewObject(id) => div(
+            case MyPage.View(id) => div(
               child <-- dbVar.signal.map(db => db.get(id) match {
                 case Some(e) => ViewObject(e, dbVar, removeRelation)
                 case None => div(h1("Not found"))

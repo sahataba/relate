@@ -13,7 +13,7 @@ final case class NavBar() extends Component {
       justifyContent.spaceEvenly,
       fontSize("18px"),
       navLink("Home", HomePage),
-      navLink("Object", ViewObject(ValueId(9))),
+      navLink("View", View(ValueId(9))),
       navLink("Search", Search("")),
       navLink("Database", ViewDatabase),
     )
