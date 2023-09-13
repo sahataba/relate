@@ -10,7 +10,7 @@ import org.scalajs.dom
 import Page as MyPage
 import be.doeraene.webcomponents.ui5.*
 
-case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
+case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: Relation) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h1("View: ", idToString(entity.id)),
@@ -28,7 +28,7 @@ case class ViewValue(value: Value) extends Component {
   )
 }
 
-case class ViewRelations(relations: Relations, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
+case class ViewRelations(relations: Relations, db: Var[Database], removeRelation: (id: Relation) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("Relations"),
@@ -36,7 +36,7 @@ case class ViewRelations(relations: Relations, db: Var[Database], removeRelation
   )
 }
 
-case class ViewReferences(references: References, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
+case class ViewReferences(references: References, db: Var[Database], removeRelation: (id: Relation) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("References"),
@@ -52,7 +52,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
       db.get(id).map(e => e.value).getOrElse("not found"),
       onClick --> { _ => Router.router.pushState(MyPage.View(id))},
     )
-    case id: RelationId => relationSentence(db.getRelation(id).get, dbVar)//todo .get
+    case id: URI => a(id.toString())//relationSentence(db.getRelation(id).get, dbVar)//todo .get
   }
   val to = relation.`object` match {
     case id: ValueId => a(
@@ -60,7 +60,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
       db.get(id).map(e => e.value).getOrElse("not found"),
       onClick --> { _ => Router.router.pushState(MyPage.View(id))},
     )
-    case id: RelationId => relationSentence(db.getRelation(id).get, dbVar)
+    case id: URI => a(id.toString())//relationSentence(db.getRelation(id).get, dbVar)
   }
   div(
     display.flex,
@@ -71,7 +71,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
   )
 }
 
-case class ViewRelation(relation: Relation, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
+case class ViewRelation(relation: Relation, db: Var[Database], removeRelation: (id: Relation) => Unit) extends Component {
   def body: HtmlElement =
     div(
       display.flex,
@@ -79,7 +79,7 @@ case class ViewRelation(relation: Relation, db: Var[Database], removeRelation: (
       relationSentence(relation, db),
       button(
         "X",
-        onClick --> { _ => removeRelation(relation.id) }
+        onClick --> { _ => removeRelation(relation) }
       )
     )
 }
@@ -88,18 +88,15 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
   val db = dbVar.now()
   val relationsVar = Var(List(
     EditRelation(
-      id = db.newRelationId(),
       subject = from,
       predicate = "has a",
       `object` = None)))
 
   def newRelation(from: Id): Unit = {
     relationsVar.update(relations => {
-      val nId = RelationId(Math.max(db.newRelationId().value, relations.map(_.id.value).max + 1))
       val (previous, last) = relations.splitAt(relations.length - 1)
-      val updatedRelations = previous :+ last.head.copy(`object` = Some(nId))
+      val updatedRelations = previous :+ last.head//.head.copy(`object` = Some(nId))
       updatedRelations :+ EditRelation(
-      id = nId,
       subject = from,
       predicate = "has a",
       `object` = None)
@@ -110,7 +107,7 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
       val edited = relationsVar.now()
       val (previous, partial) = edited.partition(_.`object`.isDefined)
       val (defined, last) = previous.splitAt(previous.length - 1)
-      db.saveRelations((defined ::: last.map(l => l.copy(`object` = Some(partial.head.subject)))).map(r => Relation(r.id, r.subject, r.`object`.get, r.predicate)))
+      db.saveRelations((defined ::: last.map(l => l.copy(`object` = Some(partial.head.subject)))).map(r => Relation(r.subject, r.`object`.get, r.predicate)))
     })
   }
   def body: HtmlElement = div(
@@ -132,7 +129,7 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
   val db = dbVar.now()
   val allOptions =
     db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")).concat(
-      db.getRelations().map(r => option(value := idToString(r.id), s"${idToString(r.id)} ${r.predicate}")))
+      db.getRelations().map(r => option(value := r.toString(), r.toString())))
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
@@ -222,7 +219,7 @@ case class SearchResults(results: List[Entity]) extends Component {
             td(
               aLink,
               onClick --> { _ => e.id match {
-                case id: RelationId => 
+                case id: URI => 
                 case id: ValueId => Router.router.pushState(MyPage.View(id))
               }},
               s"${idToString(e.id)}"
@@ -242,7 +239,7 @@ def app(): HtmlElement = {
     val o = dbVar.signal.map(db => {
       dom.window.localStorage.setItem("db", db.toJson)
     }).map(s => span(""))
-    def removeRelation(id: RelationId): Unit = {
+    def removeRelation(id: Relation): Unit = {
       dbVar.update(_.remove(id))
     }
     div(

@@ -4,32 +4,32 @@ import zio.json._
 
 type Concept = String
 type Concepts = List[Concept] //we can store
-case class RelationId(value: Int)
-case class Relation(id: RelationId, subject: Id, `object`: Id, predicate: Concept = "has a")
-case class EditRelation(id: RelationId, subject: Id, `object`: Option[Id], predicate: Concept = "has a")
+case class URI(value: Int)
+case class Relation(subject: Id, `object`: Id, predicate: Concept = "has a")
+case class EditRelation(subject: Id, `object`: Option[Id], predicate: Concept = "has a")
 type Relations = Set[Relation]
 type References = Set[Relation]
 type Value = String
 case class ValueId(value: Int)
-type Id = RelationId | ValueId
+type Id = URI | ValueId
 case class Entity(id: Id, value: Value, relations: Relations, references: References)
 
 def idToString(id: Id): String = id match {
-  case id: RelationId => s"r-${id.value}"
+  case id: URI => s"r-${id.value}"
   case id: ValueId => s"v-${id.value}"
 }
 def stringToId(s: String): Id = {
   val parts = s.split("-")
   parts(0) match {
-    case "r" => RelationId(parts(1).toInt)
+    case "r" => URI(parts(1).toInt)
     case "v" => ValueId(parts(1).toInt)
   }
 }
-def relationIdToString(id: RelationId): String = s"r-${id.value}"
-def stringToRelationId(s: String): RelationId = {
+def relationIdToString(id: URI): String = s"r-${id.value}"
+def stringToRelationId(s: String): URI = {
   val parts = s.split("-")
   parts(0) match {
-    case "r" => RelationId(parts(1).toInt)
+    case "r" => URI(parts(1).toInt)
     case "v" => throw Exception("not a relation id")
   }
 }
@@ -42,9 +42,9 @@ def stringToValueId(s: String): ValueId = {
   }
 }
 
-object RelationId:
-  given JsonDecoder[RelationId] = JsonDecoder[String].map(stringToRelationId)
-  given JsonEncoder[RelationId] = JsonEncoder[String].contramap(relationIdToString)
+object URI:
+  given JsonDecoder[URI] = JsonDecoder[String].map(stringToRelationId)
+  given JsonEncoder[URI] = JsonEncoder[String].contramap(relationIdToString)
 
 object Id:
   given JsonDecoder[Id] = JsonDecoder[String].map(stringToId)
