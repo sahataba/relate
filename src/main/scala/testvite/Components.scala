@@ -141,6 +141,7 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
     span(idToString(relation.from)),
     Input(
       _.placeholder := "Predicate",
+      _.showClearIcon := true,
       value <-- kindVar.signal,
       onInput.mapToValue --> { kind => kindVar.update(_ => kind) }
     ),
@@ -149,6 +150,7 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
       flexDirection.column,
       Input(
         _.placeholder := "Object",
+        _.showClearIcon := true,
         _.value <-- newValueVar.signal.map(_.getOrElse("")),
         onInput.mapToValue --> { newValue => newValueVar.update(_ => if(newValue.isEmpty()) None else Some(newValue)) }
       ),
