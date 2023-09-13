@@ -19,76 +19,66 @@ val data =
   },
   "relations": [
     {
-      "id": "r-4",
-      "from": "v-10",
-      "to": "v-9",
-      "kind": "has a"
+      "subject": "v-10",
+      "object": "v-9",
+      "predicate": "has a"
     },
     {
       "id": "r-7",
-      "from": "v-1",
-      "to": "r-8",
-      "kind": "actor role"
+      "subject": "v-1",
+      "object": "r-8",
+      "predicate": "actor role"
     },
     {
-      "id": "r-2",
-      "from": "v-7",
-      "to": "v-8",
-      "kind": "has a"
+      "subject": "v-7",
+      "object": "v-8",
+      "predicate": "has a"
     },
     {
-      "id": "r-9",
-      "from": "v-1",
-      "to": "r-10",
-      "kind": "actor role"
+      "subject": "v-1",
+      "object": "r-10",
+      "predicate": "actor role"
     },
     {
       "id": "r-5",
-      "from": "v-1",
-      "to": "r-6",
-      "kind": "actor role"
+      "subject": "v-1",
+      "object": "r-6",
+      "predicate": "actor role"
     },
     {
-      "id": "r-1",
-      "from": "v-2",
-      "to": "r-2",
-      "kind": "has a"
+      "subject": "v-2",
+      "object": "r-2",
+      "predicate": "has a"
     },
     {
-      "id": "r-12",
-      "from": "v-13",
-      "to": "v-6",
-      "kind": "character"
+      "subject": "v-13",
+      "object": "v-6",
+      "predicate": "character"
     },
     {
-      "id": "r-11",
-      "from": "v-1",
-      "to": "r-12",
-      "kind": "actor role"
+      "subject": "v-1",
+      "object": "r-12",
+      "predicate": "actor role"
     },
     {
-      "id": "r-3",
-      "from": "v-2",
-      "to": "r-4",
-      "kind": "has a"
+      "subject": "v-2",
+      "object": "r-4",
+      "predicate": "has a"
     },
     {
-      "id": "r-8",
-      "from": "v-12",
-      "to": "v-4",
-      "kind": "character"
+      "subject": "v-12",
+      "object": "v-4",
+      "predicate": "character"
     },
     {
-      "id": "r-6",
-      "from": "v-12",
-      "to": "v-3",
-      "kind": "actor"
+      "subject": "v-12",
+      "object": "v-3",
+      "predicate": "actor"
     },
     {
-      "id": "r-10",
-      "from": "v-13",
-      "to": "v-5",
-      "kind": "actor"
+      "subject": "v-13",
+      "object": "v-5",
+      "predicate": "actor"
     }
   ]
 }
