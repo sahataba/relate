@@ -53,7 +53,11 @@ def viewId(id: Id, db: Database): HtmlElement = id match {
       idToString(id),
       onClick --> { _ => Router.router.pushState(MyPage.View(id))},
     )
-  case id: URI => a(id.toString())
+  case id: URI => a(
+      aLink,
+      idToString(id),
+      onClick --> { _ => Router.router.pushState(MyPage.View(id))},
+    )
 }
 
 def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
