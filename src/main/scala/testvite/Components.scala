@@ -49,11 +49,13 @@ case class ViewReferences(references: References, db: Var[Database], removeRelat
 
 def viewId(id: Id, db: Database): HtmlElement = id match {
   case id: Value => a(
+      marginLeft("1em"),
       aLink,
       idToString(id),
       onClick --> { _ => Router.router.pushState(MyPage.View(id))},
     )
   case id: URI => a(
+      marginLeft("1em"),
       aLink,
       idToString(id),
       onClick --> { _ => Router.router.pushState(MyPage.View(id))},
@@ -66,7 +68,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
     display.flex,
     flexDirection.row,
     viewId(relation.subject, db),
-    span(marginLeft("1em"), marginRight("1em"),  s"${relation.predicate}"),
+    viewId(relation.predicate, db),
     viewId(relation.`object`, db),
   )
 }
