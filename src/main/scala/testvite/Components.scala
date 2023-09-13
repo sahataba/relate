@@ -44,30 +44,23 @@ case class ViewReferences(references: References, db: Var[Database], removeRelat
   )
 }
 
+def viewId(id: Id, db: Database): HtmlElement = id match {
+  case id: ValueId => a(
+      aLink,
+      db.get(id).map(e => e.value).getOrElse("not found"),
+      onClick --> { _ => Router.router.pushState(MyPage.View(id))},
+    )
+  case id: URI => a(id.toString())
+}
+
 def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
   val db = dbVar.now()
-  val from = relation.subject match {
-    case id: ValueId => a(
-      aLink,
-      db.get(id).map(e => e.value).getOrElse("not found"),
-      onClick --> { _ => Router.router.pushState(MyPage.View(id))},
-    )
-    case id: URI => a(id.toString())//relationSentence(db.getRelation(id).get, dbVar)//todo .get
-  }
-  val to = relation.`object` match {
-    case id: ValueId => a(
-      aLink,
-      db.get(id).map(e => e.value).getOrElse("not found"),
-      onClick --> { _ => Router.router.pushState(MyPage.View(id))},
-    )
-    case id: URI => a(id.toString())//relationSentence(db.getRelation(id).get, dbVar)
-  }
   div(
     display.flex,
     flexDirection.row,
-    from,
+    viewId(relation.subject, db),
     span(marginLeft("1em"), marginRight("1em"),  s"${relation.predicate}"),
-    to
+    viewId(relation.`object`, db),
   )
 }
 
