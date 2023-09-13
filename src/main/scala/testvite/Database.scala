@@ -8,13 +8,11 @@ case class Database(private val values: Map[ValueId, Value], private val relatio
       .filter((id, value) => value.contains(query))
       .map((id, value) => Entity(
         id,
-        value,
         relations.filter(r => r.subject == id).toSet,
         relations.filter(r => r.`object` == id).toSet,
       )).toList
   def get(id: ValueId): Option[Entity] = values.get(id).map(value => Entity(
         id,
-        value,
         relations.filter(r => r.subject == id).toSet,
         relations.filter(r => r.`object` == id).toSet,
       ))

@@ -15,70 +15,14 @@ val data =
     "v-7": "gr ac role 1",
     "v-13": "gr ac role ac 2",
     "v-9": "Ryan Stone",
-    "v-8": "Sandra Bullock"
+    "v-8": "Sandra Bullock",
+    "v-33": "has a"
   },
   "relations": [
     {
-      "subject": "v-10",
-      "object": "v-9",
-      "predicate": "has a"
-    },
-    {
-      "id": "r-7",
-      "subject": "v-1",
-      "object": "r-8",
-      "predicate": "actor role"
-    },
-    {
-      "subject": "v-7",
-      "object": "v-8",
-      "predicate": "has a"
-    },
-    {
-      "subject": "v-1",
-      "object": "r-10",
-      "predicate": "actor role"
-    },
-    {
-      "id": "r-5",
-      "subject": "v-1",
-      "object": "r-6",
-      "predicate": "actor role"
-    },
-    {
-      "subject": "v-2",
-      "object": "r-2",
-      "predicate": "has a"
-    },
-    {
-      "subject": "v-13",
-      "object": "v-6",
-      "predicate": "character"
-    },
-    {
-      "subject": "v-1",
-      "object": "r-12",
-      "predicate": "actor role"
-    },
-    {
-      "subject": "v-2",
-      "object": "r-4",
-      "predicate": "has a"
-    },
-    {
-      "subject": "v-12",
-      "object": "v-4",
-      "predicate": "character"
-    },
-    {
-      "subject": "v-12",
-      "object": "v-3",
-      "predicate": "actor"
-    },
-    {
-      "subject": "v-13",
-      "object": "v-5",
-      "predicate": "actor"
+      "subject": "r-10",
+      "object": "r-9",
+      "predicate": "r-33"
     }
   ]
 }

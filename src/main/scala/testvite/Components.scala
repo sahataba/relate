@@ -14,10 +14,13 @@ case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: Re
   def body: HtmlElement = div(
     roundedBorder,
     h1("View: ", idToString(entity.id)),
-    ViewValue(entity.value),
+    viewId(entity.id, db.now()),
     ViewRelations(entity.relations, db, removeRelation),
     ViewReferences(entity.references, db, removeRelation),
-    AddRelations(db, entity.id),
+    entity.id match {
+      case id: URI => AddRelations(db, id)
+      case value: ValueId => div()
+    },
   )
 }
 
@@ -47,7 +50,7 @@ case class ViewReferences(references: References, db: Var[Database], removeRelat
 def viewId(id: Id, db: Database): HtmlElement = id match {
   case id: ValueId => a(
       aLink,
-      db.get(id).map(e => e.value).getOrElse("not found"),
+      db.get(id).map(e => idToString(e.id)).getOrElse("not found"),
       onClick --> { _ => Router.router.pushState(MyPage.View(id))},
     )
   case id: URI => a(id.toString())
@@ -77,21 +80,21 @@ case class ViewRelation(relation: Relation, db: Var[Database], removeRelation: (
     )
 }
 
-case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
+case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
   val db = dbVar.now()
   val relationsVar = Var(List(
     EditRelation(
-      subject = from,
-      predicate = "has a",
+      subject = Some(from),
+      predicate = None,
       `object` = None)))
 
-  def newRelation(from: Id): Unit = {
+  def newRelation(from: URI): Unit = {
     relationsVar.update(relations => {
       val (previous, last) = relations.splitAt(relations.length - 1)
       val updatedRelations = previous :+ last.head//.head.copy(`object` = Some(nId))
       updatedRelations :+ EditRelation(
-      subject = from,
-      predicate = "has a",
+      subject = Some(from),
+      predicate = None,
       `object` = None)
     })
   }
@@ -100,7 +103,7 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
       val edited = relationsVar.now()
       val (previous, partial) = edited.partition(_.`object`.isDefined)
       val (defined, last) = previous.splitAt(previous.length - 1)
-      db.saveRelations((defined ::: last.map(l => l.copy(`object` = Some(partial.head.subject)))).map(r => Relation(r.subject, r.`object`.get, r.predicate)))
+      db.saveRelations(edited.map(r => Relation(r.subject.get, r.`object`.get, r.predicate.get)))//todo
     })
   }
   def body: HtmlElement = div(
@@ -115,13 +118,13 @@ case class AddRelations(dbVar: Var[Database], from: Id) extends Component {
   )
 }
 
-case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation: (from: Id) => Unit) extends Component {
-  val kindVar = Var("has a")
+case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation: (from: URI) => Unit) extends Component {
+  val relationVar = Var(relation)
   val newValueVar: Var[Option[Value]] = Var(None)
   val toVar: Var[Option[Id]] = Var(relation.`object`)
   val db = dbVar.now()
   val allOptions =
-    db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)} ${e.value}")).concat(
+    db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)}")).concat(
       db.getRelations().map(r => option(value := r.toString(), r.toString())))
   def body: HtmlElement = div(
     display.flex,
@@ -130,13 +133,14 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
       _.readonly := true,
       _.placeholder := "Subject",
       _.showClearIcon := true,
-      value := idToString(relation.subject),
+      value <-- relationVar.signal.map(_.subject.map(idToString).getOrElse("")),
+      onInput.mapToValue --> { value => relationVar.update(_.copy(subject = if (value.isEmpty()) None else Some(stringToRelationId(value)))) }
     ),
     Input(
       _.placeholder := "Predicate",
       _.showClearIcon := true,
-      value <-- kindVar.signal,
-      onInput.mapToValue --> { kind => kindVar.update(_ => kind) }
+      value <-- relationVar.signal.map(_.predicate.map(idToString).getOrElse("")),
+      onInput.mapToValue --> { value => relationVar.update(_.copy(predicate = if (value.isEmpty()) None else Some(stringToRelationId(value)))) }
     ),
     div(
       display.flex,
@@ -150,7 +154,7 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
       select(
         value <-- toVar.signal.map(_.map(idToString).getOrElse("")),
         allOptions,
-        onChange.mapToValue --> {v => newRelation(stringToId(v))},
+        onChange.mapToValue --> {v => newRelation(stringToRelationId(v))},
       ),
     ),
     button(
@@ -164,9 +168,9 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
           }
           case None => {
             println(toVar.now())
-            toVar.now() match {
-              case Some(to) => newRelation(to)
-              case None => 
+            val relation = relationVar.now()
+            if (relation.subject.isDefined) {
+              newRelation(relation.subject.get)
             }
           }
         }
@@ -178,7 +182,7 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
 case class Search(query: String, db: Database) extends Component {
   def body: HtmlElement = div(
     SearchQuery(query),
-    SearchResults(db.search(query))
+    SearchResults(db.search(query), db)
   )
 }
 
@@ -201,7 +205,7 @@ case class SearchQuery(query: String) extends Component {
   )
 }
 
-case class SearchResults(results: List[Entity]) extends Component {
+case class SearchResults(results: List[Entity], db: Database) extends Component {
   def body: HtmlElement =
     table(
       roundedBorder,
@@ -209,15 +213,7 @@ case class SearchResults(results: List[Entity]) extends Component {
         marginTop("1em"),
         results.map(e =>
           tr(
-            td(
-              aLink,
-              onClick --> { _ => e.id match {
-                case id: URI => 
-                case id: ValueId => Router.router.pushState(MyPage.View(id))
-              }},
-              s"${idToString(e.id)}"
-            ),
-            td(e.value),
+            td(viewId(e.id, db)),
           )
         )
       )

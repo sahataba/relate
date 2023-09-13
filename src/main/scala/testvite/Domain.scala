@@ -5,14 +5,14 @@ import zio.json._
 type Concept = String
 type Concepts = List[Concept] //we can store
 case class URI(value: String)
-case class Relation(subject: Id, `object`: Id, predicate: Concept = "has a")
-case class EditRelation(subject: Id, `object`: Option[Id], predicate: Concept = "has a")
+case class Relation(subject: URI, `object`: URI | ValueId, predicate: URI)
+case class EditRelation(subject: Option[URI], `object`: Option[URI | ValueId], predicate: Option[URI])
 type Relations = Set[Relation]
 type References = Set[Relation]
 type Value = String
 case class ValueId(value: String)
 type Id = URI | ValueId
-case class Entity(id: Id, value: Value, relations: Relations, references: References)
+case class Entity(id: URI | ValueId, relations: Relations, references: References)
 
 def idToString(id: Id): String = id match {
   case id: URI => s"r-${id.value}"
