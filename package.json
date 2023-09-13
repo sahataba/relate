@@ -8,7 +8,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "d3": "7.4.0"
+    "d3": "7.4.0",
+    "@ui5/webcomponents": "1.10.0",
+    "@ui5/webcomponents-fiori": "1.10.0",
+    "@ui5/webcomponents-icons": "1.10.0"
   },
   "devDependencies": {
     "vite": "^2.9.9",

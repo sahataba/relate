@@ -7,6 +7,9 @@ import com.raquo.laminar.api.L.{*, given}
 import zio.json._
 import org.scalajs.dom
 
+import Page as MyPage
+import be.doeraene.webcomponents.ui5.*
+
 case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: RelationId) => Unit) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
@@ -47,7 +50,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
     case id: ValueId => a(
       aLink,
       db.get(id).map(e => e.value).getOrElse("not found"),
-      onClick --> { _ => Router.router.pushState(Page.ViewObject(id))},
+      onClick --> { _ => Router.router.pushState(MyPage.ViewObject(id))},
     )
     case id: RelationId => relationSentence(db.getRelation(id).get, dbVar)//todo .get
   }
@@ -55,7 +58,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
     case id: ValueId => a(
       aLink,
       db.get(id).map(e => e.value).getOrElse("not found"),
-      onClick --> { _ => Router.router.pushState(Page.ViewObject(id))},
+      onClick --> { _ => Router.router.pushState(MyPage.ViewObject(id))},
     )
     case id: RelationId => relationSentence(db.getRelation(id).get, dbVar)
   }
@@ -136,17 +139,17 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
     flexDirection.row,
     span(idToString(relation.id)),
     span(idToString(relation.from)),
-    input(
-      typ := "text",
+    Input(
+      _.placeholder := "Predicate",
       value <-- kindVar.signal,
       onInput.mapToValue --> { kind => kindVar.update(_ => kind) }
     ),
     div(
       display.flex,
       flexDirection.column,
-      input(
-        typ := "text",
-        value <-- newValueVar.signal.map(_.getOrElse("")),
+      Input(
+        _.placeholder := "Object",
+        _.value <-- newValueVar.signal.map(_.getOrElse("")),
         onInput.mapToValue --> { newValue => newValueVar.update(_ => if(newValue.isEmpty()) None else Some(newValue)) }
       ),
       select(
@@ -197,7 +200,7 @@ case class SearchQuery(query: String) extends Component {
         marginLeft("0.5em"),
         typ := "text",
         value := query,
-        onInput.mapToValue --> { query => Router.router.pushState(Page.Search(query)) }
+        onInput.mapToValue --> { query => Router.router.pushState(MyPage.Search(query)) }
       )
     ),
   )
@@ -215,7 +218,7 @@ case class SearchResults(results: List[Entity]) extends Component {
               aLink,
               onClick --> { _ => e.id match {
                 case id: RelationId => 
-                case id: ValueId => Router.router.pushState(Page.ViewObject(id))
+                case id: ValueId => Router.router.pushState(MyPage.ViewObject(id))
               }},
               s"${idToString(e.id)}"
             ),
@@ -248,18 +251,18 @@ def app(): HtmlElement = {
           flexDirection.row,
           justifyContent.center,
           child <-- Router.router.currentPageSignal.map {
-            case Page.HomePage => div(
+            case MyPage.HomePage => div(
               h1("Relate"),
               Graph(),
             )
-            case Page.ViewObject(id) => div(
+            case MyPage.ViewObject(id) => div(
               child <-- dbVar.signal.map(db => db.get(id) match {
                 case Some(e) => ViewObject(e, dbVar, removeRelation)
                 case None => div(h1("Not found"))
               })
             )
-            case Page.Search(query) => Search(query, dbVar.now())
-            case Page.ViewDatabase => pre(
+            case MyPage.Search(query) => Search(query, dbVar.now())
+            case MyPage.ViewDatabase => pre(
               child <-- dbVar.signal.map(db => code(display.block, width("0"), js.JSON.stringify(js.JSON.parse(db.toJson), null, 2)))
             )
           }

@@ -16,7 +16,7 @@ case class Node(name: String, children: List[Node])
 object Node{
   implicit val rw: RW[Node] = macroRW
 }
-val data = Node("Eve", List(
+val data2 = Node("Eve", List(
   Node("Cain", List()),
   Node("Seth", List(
     Node("Enos", List()),
@@ -29,7 +29,7 @@ val data = Node("Eve", List(
   Node("Azura", List())
 ))
 final case class Graph() extends Component {
-  val d = write(data)
+  val d = write(data2)
   val g = d3Mod.hierarchy(js.JSON.parse(d))
   pprint.pprintln(g)
   //println(g.children.map(_.map(pprint(_))))
