@@ -5,24 +5,23 @@ import zio.json._
 type Concept = String
 type Concepts = List[Concept] //we can store
 case class URI(value: String)
-case class Relation(subject: URI, `object`: URI | ValueId, predicate: URI)
-case class EditRelation(subject: Option[URI], `object`: Option[URI | ValueId], predicate: Option[URI])
+case class Relation(subject: URI, `object`: URI | Value, predicate: URI)
+case class EditRelation(subject: Option[URI], `object`: Option[URI | Value], predicate: Option[URI])
 type Relations = Set[Relation]
 type References = Set[Relation]
-type Value = String
-case class ValueId(value: String)
-type Id = URI | ValueId
-case class Entity(id: URI | ValueId, relations: Relations, references: References)
+case class Value(value: String)
+type Id = URI | Value
+case class Entity(id: URI | Value, relations: Relations, references: References)
 
 def idToString(id: Id): String = id match {
   case id: URI => s"r-${id.value}"
-  case id: ValueId => s"v-${id.value}"
+  case id: Value => s"v-${id.value}"
 }
 def stringToId(s: String): Id = {
   val parts = s.split("-")
   parts(0) match {
     case "r" => URI(parts(1))
-    case "v" => ValueId(parts(1))
+    case "v" => Value(parts(1))
   }
 }
 def relationIdToString(id: URI): String = s"r-${id.value}"
@@ -33,11 +32,11 @@ def stringToRelationId(s: String): URI = {
     case "v" => throw Exception("not a relation id")
   }
 }
-def valueIdToString(id: ValueId): String = s"v-${id.value}"
-def stringToValueId(s: String): ValueId = {
+def valueIdToString(id: Value): String = s"v-${id.value}"
+def stringToValueId(s: String): Value = {
   val parts = s.split("-")
   parts(0) match {
-    case "v" => ValueId(parts(1))
+    case "v" => Value(parts(1))
     case "r" => throw Exception("not a value id")
   }
 }

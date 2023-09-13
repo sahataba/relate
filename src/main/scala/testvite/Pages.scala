@@ -10,12 +10,12 @@ import java.util.UUID
 sealed trait Page
 
 object Page:
-  case class View(id: ValueId) extends Page
+  case class View(id: Id) extends Page
   case object HomePage extends Page
   case class Search(query: String) extends Page
   case object ViewDatabase extends Page
-  given JsonDecoder[ValueId] = JsonDecoder[String].map(ValueId.apply)
-  given JsonEncoder[ValueId] = JsonEncoder[String].contramap(a => a.value)
+  given JsonDecoder[Id] = JsonDecoder[String].map(stringToId)
+  given JsonEncoder[Id] = JsonEncoder[String].contramap(idToString)
   implicit val codec: JsonCodec[Page] = DeriveJsonCodec.gen[Page]
 
 object Router:
@@ -28,8 +28,8 @@ object Router:
     Route.static(ViewDatabase, root / "database" / endOfSegments)
 
   val viewObjectRoute = Route[View, String](
-    encode = page => page.id.value,
-    decode = arg => View(ValueId(arg)),
+    encode = page => idToString(page.id),
+    decode = arg => View(stringToId((arg))),
     pattern = root / "view" / segment[String] / endOfSegments,
   )
 

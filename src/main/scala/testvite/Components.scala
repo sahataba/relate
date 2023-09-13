@@ -19,7 +19,7 @@ case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: Re
     ViewReferences(entity.references, db, removeRelation),
     entity.id match {
       case id: URI => AddRelations(db, id)
-      case value: ValueId => div()
+      case value: Value => div("todo")
     },
   )
 }
@@ -27,7 +27,7 @@ case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: Re
 case class ViewValue(value: Value) extends Component {
   def body: HtmlElement = p(
     roundedBorder,
-    value
+    value.value,
   )
 }
 
@@ -48,9 +48,9 @@ case class ViewReferences(references: References, db: Var[Database], removeRelat
 }
 
 def viewId(id: Id, db: Database): HtmlElement = id match {
-  case id: ValueId => a(
+  case id: Value => a(
       aLink,
-      db.get(id).map(e => idToString(e.id)).getOrElse("not found"),
+      idToString(id),
       onClick --> { _ => Router.router.pushState(MyPage.View(id))},
     )
   case id: URI => a(id.toString())
@@ -123,9 +123,7 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
   val newValueVar: Var[Option[Value]] = Var(None)
   val toVar: Var[Option[Id]] = Var(relation.`object`)
   val db = dbVar.now()
-  val allOptions =
-    db.search("").map(e => option(value := idToString(e.id), s"${idToString(e.id)}")).concat(
-      db.getRelations().map(r => option(value := r.toString(), r.toString())))
+  val allOptions = db.getRelations().map(r => option(value := r.toString(), r.toString()))
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
@@ -148,8 +146,9 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
       Input(
         _.placeholder := "Object",
         _.showClearIcon := true,
-        _.value <-- newValueVar.signal.map(_.getOrElse("")),
-        onInput.mapToValue --> { newValue => newValueVar.update(_ => if(newValue.isEmpty()) None else Some(newValue)) }
+        _.value <-- newValueVar.signal.map(_.map(idToString).getOrElse("")),
+        onInput.mapToValue --> { value => relationVar.update(_.copy(`object` = if (value.isEmpty()) None else Some(stringToRelationId(value)))) }
+        //onInput.mapToValue --> { newValue => newValueVar.update(_ => if(newValue.isEmpty()) None else Some(newValue)) }
       ),
       select(
         value <-- toVar.signal.map(_.map(idToString).getOrElse("")),
@@ -160,29 +159,20 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
     button(
       "Add",
       onClick --> { _ => {
-        val newValue = newValueVar.now()
-        newValue match {
-          case Some(value) => {
-            val (valueId, newDb) = dbVar.now().newValue(value)
-            dbVar.update(_ => newDb)
-          }
-          case None => {
-            println(toVar.now())
-            val relation = relationVar.now()
-            if (relation.subject.isDefined) {
-              newRelation(relation.subject.get)
-            }
-          }
+        println(toVar.now())
+        val relation = relationVar.now()
+        if (relation.subject.isDefined) {
+          newRelation(relation.subject.get)
         }
       }}
     )
   )
 }
 
-case class Search(query: String, db: Database) extends Component {
+case class Search(query: String, db: Var[Database]) extends Component {
   def body: HtmlElement = div(
     SearchQuery(query),
-    SearchResults(db.search(query), db)
+    SearchResults(db.now().search(query), db)
   )
 }
 
@@ -205,7 +195,7 @@ case class SearchQuery(query: String) extends Component {
   )
 }
 
-case class SearchResults(results: List[Entity], db: Database) extends Component {
+case class SearchResults(results: List[Relation], db: Var[Database]) extends Component {
   def body: HtmlElement =
     table(
       roundedBorder,
@@ -213,7 +203,7 @@ case class SearchResults(results: List[Entity], db: Database) extends Component 
         marginTop("1em"),
         results.map(e =>
           tr(
-            td(viewId(e.id, db)),
+            td(relationSentence(e, db)),
           )
         )
       )
@@ -247,12 +237,9 @@ def app(): HtmlElement = {
               Graph(),
             )
             case MyPage.View(id) => div(
-              child <-- dbVar.signal.map(db => db.get(id) match {
-                case Some(e) => ViewObject(e, dbVar, removeRelation)
-                case None => div(h1("Not found"))
-              })
+              child <-- dbVar.signal.map(db =>  ViewObject(db.get(id), dbVar, removeRelation))
             )
-            case MyPage.Search(query) => Search(query, dbVar.now())
+            case MyPage.Search(query) => Search(query, dbVar)
             case MyPage.ViewDatabase => pre(
               child <-- dbVar.signal.map(db => code(display.block, width("0"), js.JSON.stringify(js.JSON.parse(db.toJson), null, 2)))
             )
