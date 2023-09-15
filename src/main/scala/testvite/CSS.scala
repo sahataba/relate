@@ -5,6 +5,9 @@ import scalacss.DevDefaults._
 object CSS extends StyleSheet.Inline {
   import dsl._
 
+  object colors:
+    val textColor = c"rgb(245, 135, 31)" 
+
   val ff = fontFace("appFont")(_
     .src("local(Avenir)")
     .fontStretch.ultraCondensed
@@ -16,7 +19,7 @@ object CSS extends StyleSheet.Inline {
     //`-webkit-font-smoothing`: antialiased,
     //`-moz-osx-font-smoothing`: grayscale,
     textAlign.center,
-    color(c"rgb(245, 135, 31)"),
+    color(colors.textColor),
     marginTop(60.px),
   )
 
