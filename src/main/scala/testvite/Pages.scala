@@ -28,13 +28,13 @@ object Router:
   val viewObjectRoute = Route[View, String](
     encode = page => idToString(page.id),
     decode = arg => View(stringToId((arg))),
-    pattern = root / "view" / segment[String] / endOfSegments,
+    pattern = root / "view" / segment[String] / endOfSegments
   )
 
   val searchRoute = Route[Search, String](
     encode = page => page.query,
     decode = arg => Search(arg),
-    pattern = root / "search" / segment[String] / endOfSegments,
+    pattern = root / "search" / segment[String] / endOfSegments
   )
 
   val router = new Router[Page](
@@ -42,12 +42,18 @@ object Router:
       homeRoute,
       viewObjectRoute,
       searchRoute,
-      viewDatabaseRoute,
+      viewDatabaseRoute
     ),
-    getPageTitle = _.toString, // mock page title (displayed in the browser tab next to favicon)
-    serializePage = page => page.toJson, // serialize page data for storage in History API log
-    deserializePage = pageStr => pageStr.fromJson[Page].getOrElse(HomePage) // deserialize the above
+    getPageTitle =
+      _.toString, // mock page title (displayed in the browser tab next to favicon)
+    serializePage =
+      page => page.toJson, // serialize page data for storage in History API log
+    deserializePage =
+      pageStr =>
+        pageStr.fromJson[Page].getOrElse(HomePage) // deserialize the above
   )(
-    popStateEvents = L.windowEvents(_.onPopState), // this is how Waypoint avoids an explicit dependency on Laminar
+    popStateEvents = L.windowEvents(
+      _.onPopState
+    ), // this is how Waypoint avoids an explicit dependency on Laminar
     owner = L.unsafeWindowOwner // this router will live as long as the window
   )

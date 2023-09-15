@@ -13,7 +13,7 @@ object Main {
       val containerNode = dom.document.querySelector("#app")
       render(
         containerNode,
-        app(),
+        app()
       )
     }(unsafeWindowOwner)
   }

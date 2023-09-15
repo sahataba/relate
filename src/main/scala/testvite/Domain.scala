@@ -3,8 +3,16 @@ package testvite
 import zio.json._
 
 case class URI(value: String)
-case class Relation(subject: URI, `object`: URI | Value, predicate: URI)
-case class EditRelation(subject: Option[URI], `object`: Option[URI | Value], predicate: Option[URI])
+case class Relation(
+    subject: URI,
+    `object`: URI | Value,
+    predicate: URI
+) //split object field to two fields
+case class EditRelation(
+    subject: Option[URI],
+    `object`: Option[URI | Value],
+    predicate: Option[URI]
+)
 type Relations = Set[Relation]
 type References = Set[Relation]
 case class Value(value: String)
@@ -12,7 +20,7 @@ type Id = URI | Value
 case class Entity(id: URI | Value, relations: Relations, references: References)
 
 def idToString(id: Id): String = id match {
-  case id: URI => s"r-${id.value}"
+  case id: URI   => s"r-${id.value}"
   case id: Value => s"v-${id.value}"
 }
 def stringToId(s: String): Id = {
@@ -47,13 +55,11 @@ object Id:
   given JsonDecoder[Id] = JsonDecoder[String].map(stringToId)
   given JsonEncoder[Id] = JsonEncoder[String].contramap(idToString)
 
-
 //adding values
 //add relations to select
 //think about queries
 //view relation
 //more correct initial example
-
 
 //relation has a id
 //relation can reference relation or a value
@@ -64,10 +70,7 @@ object Id:
 //creating a new relation
 //displaying a relation with <a> links
 //nesting
-//displaying ids:     |id|       (long path(sentence)) 
-
-
-
+//displaying ids:     |id|       (long path(sentence))
 
 // from to =!= kind  + orientation
 //michas has a musician =!= musician is a michael
@@ -83,6 +86,5 @@ object Id:
 //1 ->       2       -> 3
 //1 ->       "born"       -> 4
 //bprn is kind of relation
-
 
 //concept is an entity that doesnt change over time like born
