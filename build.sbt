@@ -9,7 +9,7 @@ lazy val `test-vite` = project
   .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
   .settings(
     scalaVersion := "3.3.1",
-    scalacOptions ++= Seq("-encoding", "utf-8", "-deprecation", "-feature", "-Wunused:imports"),
+    scalacOptions ++= Seq("-encoding", "utf-8", "-deprecation", "-feature", "-Wunused:imports", "-Wunused:locals", "-Wunused:privates", "-Wunused:params", "-Wunused:linted"),
 
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= {

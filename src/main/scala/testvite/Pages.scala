@@ -5,8 +5,6 @@ import com.raquo.laminar.api.L
 import com.raquo.waypoint._
 import zio.json._
 
-import java.util.UUID
-
 sealed trait Page
 
 object Page:
