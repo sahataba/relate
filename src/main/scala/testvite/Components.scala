@@ -9,7 +9,11 @@ import org.scalajs.dom
 import Page as MyPage
 import be.doeraene.webcomponents.ui5.*
 
-case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: Relation) => Unit) extends Component {
+case class ViewObject(
+    entity: Entity,
+    db: Var[Database],
+    removeRelation: (id: Relation) => Unit
+) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h1("View: ", idToString(entity.id)),
@@ -17,20 +21,24 @@ case class ViewObject(entity: Entity, db: Var[Database], removeRelation: (id: Re
     ViewRelations(entity.relations, db, removeRelation),
     ViewReferences(entity.references, db, removeRelation),
     entity.id match {
-      case id: URI => AddRelations(db, id)
+      case id: URI      => AddRelations(db, id)
       case value: Value => div("todo")
-    },
+    }
   )
 }
 
 case class ViewValue(value: Value) extends Component {
   def body: HtmlElement = p(
     roundedBorder,
-    value.value,
+    value.value
   )
 }
 
-case class ViewRelations(relations: Relations, db: Var[Database], removeRelation: (id: Relation) => Unit) extends Component {
+case class ViewRelations(
+    relations: Relations,
+    db: Var[Database],
+    removeRelation: (id: Relation) => Unit
+) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("Relations"),
@@ -38,7 +46,11 @@ case class ViewRelations(relations: Relations, db: Var[Database], removeRelation
   )
 }
 
-case class ViewReferences(references: References, db: Var[Database], removeRelation: (id: Relation) => Unit) extends Component {
+case class ViewReferences(
+    references: References,
+    db: Var[Database],
+    removeRelation: (id: Relation) => Unit
+) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("References"),
@@ -47,17 +59,19 @@ case class ViewReferences(references: References, db: Var[Database], removeRelat
 }
 
 def viewId(id: Id, db: Database): HtmlElement = id match {
-  case id: Value => a(
+  case id: Value =>
+    a(
       marginLeft("1em"),
       aLink,
       idToString(id),
-      onClick --> { _ => Router.router.pushState(MyPage.View(id))},
+      onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
-  case id: URI => a(
+  case id: URI =>
+    a(
       marginLeft("1em"),
       aLink,
       idToString(id),
-      onClick --> { _ => Router.router.pushState(MyPage.View(id))},
+      onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
 }
 
@@ -68,11 +82,15 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
     flexDirection.row,
     viewId(relation.subject, db),
     viewId(relation.predicate, db),
-    viewId(relation.`object`, db),
+    viewId(relation.`object`, db)
   )
 }
 
-case class ViewRelation(relation: Relation, db: Var[Database], removeRelation: (id: Relation) => Unit) extends Component {
+case class ViewRelation(
+    relation: Relation,
+    db: Var[Database],
+    removeRelation: (id: Relation) => Unit
+) extends Component {
   def body: HtmlElement =
     div(
       display.flex,
@@ -87,20 +105,20 @@ case class ViewRelation(relation: Relation, db: Var[Database], removeRelation: (
 
 case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
   val db = dbVar.now()
-  val relationsVar = Var(List(
-    EditRelation(
-      subject = Some(from),
-      predicate = None,
-      `object` = None)))
+  val relationsVar = Var(
+    List(EditRelation(subject = Some(from), predicate = None, `object` = None))
+  )
 
   def newRelation(from: URI): Unit = {
     relationsVar.update(relations => {
       val (previous, last) = relations.splitAt(relations.length - 1)
-      val updatedRelations = previous :+ last.head//.head.copy(`object` = Some(nId))
+      val updatedRelations =
+        previous :+ last.head // .head.copy(`object` = Some(nId))
       updatedRelations :+ EditRelation(
-      subject = Some(from),
-      predicate = None,
-      `object` = None)
+        subject = Some(from),
+        predicate = None,
+        `object` = None
+      )
     })
   }
   def saveRelations(): Unit = {
@@ -108,11 +126,19 @@ case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
       val edited = relationsVar.now()
       val (previous, partial) = edited.partition(_.`object`.isDefined)
       val (defined, last) = previous.splitAt(previous.length - 1)
-      db.saveRelations(edited.map(r => Relation(r.subject.get, r.`object`.get, r.predicate.get)))//todo
+      db.saveRelations(
+        edited.map(r =>
+          Relation(r.subject.get, r.`object`.get, r.predicate.get)
+        )
+      ) // todo
     })
   }
   def body: HtmlElement = div(
-    div(display.flex, h3(margin("0em"), "New relations"), button("Save", onClick --> { _ => { saveRelations() }})),
+    div(
+      display.flex,
+      h3(margin("0em"), "New relations"),
+      button("Save", onClick --> { _ => { saveRelations() } })
+    ),
     div(
       display.flex,
       flexDirection.row,
@@ -123,11 +149,17 @@ case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
   )
 }
 
-case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation: (from: URI) => Unit) extends Component {
+case class AddRelation(
+    dbVar: Var[Database],
+    relation: EditRelation,
+    newRelation: (from: URI) => Unit
+) extends Component {
   val relationVar = Var(relation)
   val db = dbVar.now()
-  val allIds = db.getRelations().map(r => List(r.subject, r.`object`, r.predicate)).flatten
-  val allOptions = allIds.map(id => option(value := idToString(id), idToString(id)))
+  val allIds =
+    db.getRelations().map(r => List(r.subject, r.`object`, r.predicate)).flatten
+  val allOptions =
+    allIds.map(id => option(value := idToString(id), idToString(id)))
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
@@ -136,13 +168,27 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
       _.placeholder := "Subject",
       _.showClearIcon := true,
       value <-- relationVar.signal.map(_.subject.map(idToString).getOrElse("")),
-      onInput.mapToValue --> { value => relationVar.update(_.copy(subject = if (value.isEmpty()) None else Some(stringToRelationId(value)))) }
+      onInput.mapToValue --> { value =>
+        relationVar.update(
+          _.copy(subject =
+            if (value.isEmpty()) None else Some(stringToRelationId(value))
+          )
+        )
+      }
     ),
     Input(
       _.placeholder := "Predicate",
       _.showClearIcon := true,
-      value <-- relationVar.signal.map(_.predicate.map(idToString).getOrElse("")),
-      onInput.mapToValue --> { value => relationVar.update(_.copy(predicate = if (value.isEmpty()) None else Some(stringToRelationId(value)))) }
+      value <-- relationVar.signal.map(
+        _.predicate.map(idToString).getOrElse("")
+      ),
+      onInput.mapToValue --> { value =>
+        relationVar.update(
+          _.copy(predicate =
+            if (value.isEmpty()) None else Some(stringToRelationId(value))
+          )
+        )
+      }
     ),
     div(
       display.flex,
@@ -150,24 +196,36 @@ case class AddRelation(dbVar: Var[Database], relation: EditRelation, newRelation
       Input(
         _.placeholder := "Object",
         _.showClearIcon := true,
-        value <-- relationVar.signal.map(_.`object`.map(idToString).getOrElse("")),
-        onInput.mapToValue --> { value => relationVar.update(_.copy(`object` = if (value.isEmpty()) None else Some(stringToId(value)))) }
-        //onInput.mapToValue --> { newValue => newValueVar.update(_ => if(newValue.isEmpty()) None else Some(newValue)) }
+        value <-- relationVar.signal.map(
+          _.`object`.map(idToString).getOrElse("")
+        ),
+        onInput.mapToValue --> { value =>
+          relationVar.update(
+            _.copy(`object` =
+              if (value.isEmpty()) None else Some(stringToId(value))
+            )
+          )
+        }
+        // onInput.mapToValue --> { newValue => newValueVar.update(_ => if(newValue.isEmpty()) None else Some(newValue)) }
       ),
       select(
-        value <-- relationVar.signal.map(_.`object`.map(idToString).getOrElse("")),
+        value <-- relationVar.signal.map(
+          _.`object`.map(idToString).getOrElse("")
+        ),
         allOptions,
-        onChange.mapToValue --> {v => newRelation(stringToRelationId(v))},
-      ),
+        onChange.mapToValue --> { v => newRelation(stringToRelationId(v)) }
+      )
     ),
     button(
       "Add",
-      onClick --> { _ => {
-        val relation = relationVar.now()
-        if (relation.subject.isDefined) {
-          newRelation(relation.subject.get)
+      onClick --> { _ =>
+        {
+          val relation = relationVar.now()
+          if (relation.subject.isDefined) {
+            newRelation(relation.subject.get)
+          }
         }
-      }}
+      }
     )
   )
 }
@@ -192,13 +250,16 @@ case class SearchQuery(query: String) extends Component {
         marginLeft("0.5em"),
         typ := "text",
         value := query,
-        onInput.mapToValue --> { query => Router.router.pushState(MyPage.Search(query)) }
+        onInput.mapToValue --> { query =>
+          Router.router.pushState(MyPage.Search(query))
+        }
       )
-    ),
+    )
   )
 }
 
-case class SearchResults(results: List[Relation], db: Var[Database]) extends Component {
+case class SearchResults(results: List[Relation], db: Var[Database])
+    extends Component {
   def body: HtmlElement =
     table(
       roundedBorder,
@@ -206,7 +267,7 @@ case class SearchResults(results: List[Relation], db: Var[Database]) extends Com
         marginTop("1em"),
         results.map(e =>
           tr(
-            td(relationSentence(e, db)),
+            td(relationSentence(e, db))
           )
         )
       )
@@ -214,40 +275,53 @@ case class SearchResults(results: List[Relation], db: Var[Database]) extends Com
 }
 
 def app(): HtmlElement = {
-    val localData = dom.window.localStorage.getItem("db")
-    val initialData = if (localData == null) data else localData
-    val initial = initialData.fromJson[Database].getOrElse(Database.empty)
-    val dbVar = Var(initial)
-    val o = dbVar.signal.map(db => {
+  val localData = dom.window.localStorage.getItem("db")
+  val initialData = if (localData == null) data else localData
+  val initial = initialData.fromJson[Database].getOrElse(Database.empty)
+  val dbVar = Var(initial)
+  val o = dbVar.signal
+    .map(db => {
       dom.window.localStorage.setItem("db", db.toJson)
-    }).map(s => span(""))
-    def removeRelation(id: Relation): Unit = {
-      dbVar.update(_.remove(id))
-    }
+    })
+    .map(s => span(""))
+  def removeRelation(id: Relation): Unit = {
+    dbVar.update(_.remove(id))
+  }
+  div(
+    NavBar(),
     div(
-      NavBar(),
+      height("100vh"),
+      span(child <-- o), // todo
       div(
-        height("100vh"),
-        span(child <-- o),//todo
-        div(
-          marginLeft("2em"),
-          display.flex,
-          flexDirection.row,
-          justifyContent.center,
-          child <-- Router.router.currentPageSignal.map {
-            case MyPage.HomePage => div(
+        marginLeft("2em"),
+        display.flex,
+        flexDirection.row,
+        justifyContent.center,
+        child <-- Router.router.currentPageSignal.map {
+          case MyPage.HomePage =>
+            div(
               h1("Relate"),
-              Graph(),
+              Graph()
             )
-            case MyPage.View(id) => div(
-              child <-- dbVar.signal.map(db =>  ViewObject(db.get(id), dbVar, removeRelation))
+          case MyPage.View(id) =>
+            div(
+              child <-- dbVar.signal.map(db =>
+                ViewObject(db.get(id), dbVar, removeRelation)
+              )
             )
-            case MyPage.Search(query) => Search(query, dbVar)
-            case MyPage.ViewDatabase => pre(
-              child <-- dbVar.signal.map(db => code(display.block, width("0"), js.JSON.stringify(js.JSON.parse(db.toJson), null, 2)))
+          case MyPage.Search(query) => Search(query, dbVar)
+          case MyPage.ViewDatabase =>
+            pre(
+              child <-- dbVar.signal.map(db =>
+                code(
+                  display.block,
+                  width("0"),
+                  js.JSON.stringify(js.JSON.parse(db.toJson), null, 2)
+                )
+              )
             )
-          }
-        )
+        }
       )
     )
-  }
+  )
+}
