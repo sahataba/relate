@@ -58,3 +58,9 @@ $ npm run build
 
 You can then find the built files in the `dist/` directory.
 You will need an HTTP server, such as `python3 -m http.server`, to open the files, as Vite rewrites `<script>` tags to prevent cross-origin requests.
+
+## CQL
+java -cp "cql.jar:mysql-connector-java-5.1.47.jar" catdata.ide.IDE
+
+allegro
+docker run -d -e AGRAPH_SUPER_USER=test -e AGRAPH_SUPER_PASSWORD=xyzzy -p 10000-10035:10000-10035 --shm-size 1g --name agraph --restart=always franzinc/agraph:v7.4.0-devel-2023-09-11

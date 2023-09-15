@@ -42,7 +42,7 @@ final case class Graph() extends Component {
         svg.width := "500")
   def body: Div =
     div(
-      h3("Graphh"),
+      h3("Graph"),
       //s,
       //svg(g2.enter().append("circle").attr("r", 2.5)),
     )
