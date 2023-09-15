@@ -1,11 +1,6 @@
 package testvite
 
-import scala.scalajs.js
-import scala.scalajs.js.JSConverters.*
-import scala.scalajs.js.`import`
-import scala.scalajs.js.annotation.JSImport
-
-import com.raquo.laminar.api.L.{*, given}
+import com.raquo.laminar.api.L.{*}
 
 import org.scalajs.dom
 import scalacss.DevDefaults._

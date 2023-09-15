@@ -1,6 +1,6 @@
 package testvite
 
-import com.raquo.laminar.api.L.{*, given}
+import com.raquo.laminar.api.L.{*}
 
 object Controls:
 

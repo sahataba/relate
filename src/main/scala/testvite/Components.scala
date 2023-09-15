@@ -1,9 +1,8 @@
 package testvite
 
 import scala.scalajs.js
-import scala.scalajs.js.JSConverters.*
 
-import com.raquo.laminar.api.L.{*, given}
+import com.raquo.laminar.api.L.{*}
 import zio.json._
 import org.scalajs.dom
 
