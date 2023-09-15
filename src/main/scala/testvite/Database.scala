@@ -12,10 +12,10 @@ case class Database(private val relations: Set[Relation]):
   def get(id: Id): Entity = Entity(
     id = id,
     relations.filter(r => {
-      r.`object` == id
+      r.`subject` == id
     }),
     relations.filter(r => {
-      r.`subject` == id
+      r.`object` == id
     }))
 
   //def getRelation(id: RelationId) = relations.find(r => r.id == id)
