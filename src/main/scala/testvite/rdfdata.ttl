@@ -1,0 +1,7 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+foaf:person_1 a foaf:Person ;
+    foaf:name "John Smith" ;
+    foaf:age "42"^^xsd:integer ;
+    foaf:homepage <http://example.org/> .
