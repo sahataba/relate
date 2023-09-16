@@ -54,10 +54,22 @@ schema person_schema = literal : ty4 {
 	entities Person
 	attributes
 		vatnumber: Person -> String  
-		first_name: Person -> String
+		name: Person -> String
 		gender: Person -> String
 	options
 	 	prover = completion
+}
+
+instance PersonInstance = literal : person_schema {
+	generators
+		rudolf berislav : Person
+	equations
+		vatnumber(rudolf) = HR123               vatnumber(berislav) = HR124
+		name(rudolf) = rudolf		            name(berislav) = berislav
+		gender(rudolf) = male				    gender(berislav) = male                                        
+	options
+		program_allow_nontermination_unsafe=true
+		prover_simplify_max = 512
 }
 
 schema company_schema = literal : ty4 {
@@ -85,10 +97,13 @@ schema world_schema = literal : ty4 {
 		Country
 		Continent
 		City
+		Region
+	foreign_keys
+		is: Country -> Region
+		is: Continent -> Region
+		is: City -> Region
 	attributes
-		name: Country -> String
-		name: Continent -> String
-		name: City -> String
+		name: Region -> String
 	options
 	 	prover = completion
 		
@@ -115,10 +130,9 @@ schema s3 = literal : ty4 {
   		employee_name	: Employee -> String
      	age			: Employee -> Nat
      	cummulative_age: Employee -> Nat
-     	department_name 		: Department -> String
+     	name 		: Department -> String
      observation_equations
      	forall e. cummulative_age(e) = plus(age(e), age(manager(e)))
 	options
 		prover = completion
 }
-
