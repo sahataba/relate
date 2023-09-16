@@ -48,14 +48,25 @@ typeside ty4 = literal {
 
 schema empty_schema = empty : ty1
 
+schema gender_schema = literal : ty4 {
+	imports
+		empty_schema
+	entities Gender
+	attributes
+		name: Gender -> String
+	options
+	 	prover = completion
+}
+
 schema person_schema = literal : ty4 {
 	imports 
-		empty_schema
+		gender_schema
 	entities Person
+	foreign_keys
+		gender: Person -> Gender
 	attributes
 		vatnumber: Person -> String  
 		name: Person -> String
-		gender: Person -> String
 	options
 	 	prover = completion
 }
@@ -63,6 +74,7 @@ schema person_schema = literal : ty4 {
 instance PersonInstance = literal : person_schema {
 	generators
 		rudolf berislav : Person
+		male female : Gender
 	equations
 		vatnumber(rudolf) = HR123               vatnumber(berislav) = HR124
 		name(rudolf) = rudolf		            name(berislav) = berislav
