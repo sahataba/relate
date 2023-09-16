@@ -60,11 +60,47 @@ schema person_schema = literal : ty4 {
 	 	prover = completion
 }
 
+schema company_schema = literal : ty4 {
+	imports empty_schema
+	entities Company
+	attributes
+		name: Company -> String
+		vat: Company -> String
+	options
+	 	prover = completion
+}
+
+schema employee_schema = literal : ty4 {
+	imports empty_schema
+	entities Employee
+	attributes
+		name: Employee -> String
+	options
+	 	prover = completion
+}
+
+schema world_schema = literal : ty4 {
+	imports empty_schema
+	entities
+		Country
+		Continent
+		City
+	attributes
+		name: Country -> String
+		name: Continent -> String
+		name: City -> String
+	options
+	 	prover = completion
+		
+}
+
 schema s3 = literal : ty4 {
 	imports
 		person_schema
+		world_schema
+		company_schema
+		employee_schema
 	entities
-		Employee
 		Department
 	foreign_keys
 		manager   : Employee -> Employee
@@ -85,3 +121,4 @@ schema s3 = literal : ty4 {
 	options
 		prover = completion
 }
+
