@@ -73,12 +73,12 @@ schema person_schema = literal : ty4 {
 
 instance PersonInstance = literal : person_schema {
 	generators
-		rudolf berislav : Person
+		rudolf berislav jerina : Person
 		male female : Gender
 	equations
 		vatnumber(rudolf) = HR123               vatnumber(berislav) = HR124
-		name(rudolf) = rudolf		            name(berislav) = berislav
-		gender(rudolf) = male				    gender(berislav) = male                                        
+		name(rudolf) = rudolf		            name(berislav) = berislav			name(jerina) = jerina
+		gender(rudolf) = male				    gender(berislav) = male             gender(jerina) = female                           
 	options
 		program_allow_nontermination_unsafe=true
 		prover_simplify_max = 512
@@ -104,24 +104,33 @@ schema employee_schema = literal : ty4 {
 }
 
 schema world_schema = literal : ty4 {
-	imports empty_schema
+	imports person_schema
 	entities
 		Country
 		Continent
 		City
 		Region
+		Address
+		Street
 	foreign_keys
+		city: Address -> City
+		street: Address -> Street
+		country: Address -> Country
 		is: Country -> Region
 		is: Continent -> Region
 		is: City -> Region
+		borntown: Person -> City
+		capital: Country -> City
 	attributes
 		name: Region -> String
+		line: Street -> String
+		no: Street -> Nat
 	options
 	 	prover = completion
 		
 }
 
-schema s3 = literal : ty4 {
+schema top_schema = literal : ty4 {
 	imports
 		person_schema
 		world_schema
@@ -133,13 +142,13 @@ schema s3 = literal : ty4 {
 		manager   : Employee -> Employee
 		worksIn   : Employee -> Department
 		secretary : Department -> Employee
-		is : Person -> Employee
+		is : Employee -> Person 
 	path_equations
 		Employee.manager.manager = Employee.manager
 		Employee.manager.worksIn = Employee.worksIn
   		Department.secretary.worksIn = Department
   	attributes
-  		employee_name	: Employee -> String
+  		name	: Employee -> String
      	age			: Employee -> Nat
      	cummulative_age: Employee -> Nat
      	name 		: Department -> String
@@ -147,4 +156,20 @@ schema s3 = literal : ty4 {
      	forall e. cummulative_age(e) = plus(age(e), age(manager(e)))
 	options
 		prover = completion
+}
+
+instance TopInstance = literal : top_schema {
+	generators
+		rudolf berislav jerina : Person
+		male female : Gender
+		administration workers management: Department
+	equations
+		vatnumber(rudolf) = HR123               vatnumber(berislav) = HR124
+		name(rudolf) = rudolf		            name(berislav) = berislav			name(jerina) = jerina
+		gender(rudolf) = male				    gender(berislav) = male             gender(jerina) = female
+		name(male) = male						name(female) = female
+		name(administration) = Administration	name(workers) = Workers            	name(management) = Management          
+	options
+		program_allow_nontermination_unsafe=true
+		prover_simplify_max = 512
 }
