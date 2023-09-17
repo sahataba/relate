@@ -85,8 +85,10 @@ instance PersonInstance = literal : person_schema {
 }
 
 schema company_schema = literal : ty4 {
-	imports empty_schema
+	imports world_schema
 	entities Company
+	foreign_keys
+		address: Company -> Address
 	attributes
 		name: Company -> String
 		vat: Company -> String
@@ -142,6 +144,7 @@ schema top_schema = literal : ty4 {
 		manager   : Employee -> Employee
 		worksIn   : Employee -> Department
 		secretary : Department -> Employee
+		company	  : Department -> Company
 		is : Employee -> Person 
 	path_equations
 		Employee.manager.manager = Employee.manager
@@ -163,12 +166,21 @@ instance TopInstance = literal : top_schema {
 		rudolf berislav jerina : Person
 		male female : Gender
 		administration workers management: Department
+		ludnicaPreko : Company
+		brezice : City
+		regionBrezice: Region
+		beroPerac : Employee
 	equations
 		vatnumber(rudolf) = HR123               vatnumber(berislav) = HR124
 		name(rudolf) = rudolf		            name(berislav) = berislav			name(jerina) = jerina
 		gender(rudolf) = male				    gender(berislav) = male             gender(jerina) = female
 		name(male) = male						name(female) = female
-		name(administration) = Administration	name(workers) = Workers            	name(management) = Management          
+		name(administration) = Administration	name(workers) = Workers            	name(management) = Management
+		name(regionBrezice) = Brezice
+		borntown(rudolf) = brezice				borntown(berislav) = brezice		borntown(jerina) = brezice
+		worksIn(beroPerac) = workers
+		company(workers) = ludnicaPreko
+		name(ludnicaPreko) = "Ludnica Preko"
 	options
 		program_allow_nontermination_unsafe=true
 		prover_simplify_max = 512
