@@ -146,6 +146,8 @@ case class AddRelation(
   val allOptions =
     allIds.map(id => option(value := idToString(id), idToString(id)))
   val allPredicates = db.getRelations().map(_.predicate).distinct
+  val allSubjects = db.getRelations().map(_.subject).distinct
+
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
@@ -153,6 +155,7 @@ case class AddRelation(
       //_.readonly := true,
       _.placeholder := "Subject",
       _.showClearIcon := true,
+      _.showSuggestions := true,
       value <-- relationVar.signal.map(_.subject.map(_.value).getOrElse("")),
       onInput.mapToValue --> { value =>
         relationVar.update(
@@ -160,7 +163,12 @@ case class AddRelation(
             if (value.isEmpty()) None else Some(URI(value))
           )
         )
-      }
+      },
+       allSubjects.map(p =>
+        Input.suggestion(
+          _.text := p.value
+        )
+      )
     ),
     Input(
       _.placeholder := "Predicate",
