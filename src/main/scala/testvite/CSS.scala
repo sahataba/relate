@@ -6,7 +6,7 @@ object CSS extends StyleSheet.Inline {
   import dsl._
 
   object colors:
-    val textColor = c"rgb(245, 135, 31)" 
+    val textColor = c"rgb(0, 0, 0)" 
 
   val ff = fontFace("appFont")(_
     .src("local(Avenir)")
