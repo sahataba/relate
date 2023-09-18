@@ -145,6 +145,7 @@ case class AddRelation(
     db.getRelations().map(r => List(r.subject, r.`object`, r.predicate)).flatten
   val allOptions =
     allIds.map(id => option(value := idToString(id), idToString(id)))
+  val allPredicates = db.getRelations().map(_.predicate).distinct
   def body: HtmlElement = div(
     display.flex,
     flexDirection.row,
@@ -164,6 +165,7 @@ case class AddRelation(
     Input(
       _.placeholder := "Predicate",
       _.showClearIcon := true,
+      _.showSuggestions := true,
       value <-- relationVar.signal.map(
         _.predicate.map(_.value).getOrElse("")
       ),
@@ -173,7 +175,12 @@ case class AddRelation(
             if (value.isEmpty()) None else Some(URI(value))
           )
         )
-      }
+      },
+      allPredicates.map(p =>
+        Input.suggestion(
+          _.text := p.value
+        )
+      )
     ),
     div(
       display.flex,
