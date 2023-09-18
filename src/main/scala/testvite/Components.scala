@@ -106,38 +106,23 @@ case class ViewRelation(
 case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
   val db = dbVar.now()
   val relationsVar = Var(
-    List(EditRelation(subject = Some(from), predicate = None, `object` = None))
+    List(EditRelation(id = 0, subject = None, predicate = None, `object` = None))
   )
 
-  def newRelation(from: URI): Unit = {
+  def newRelation(): Unit = {
     relationsVar.update(relations => {
-      val (previous, last) = relations.splitAt(relations.length - 1)
-      val updatedRelations =
-        previous :+ last.head // .head.copy(`object` = Some(nId))
-      updatedRelations :+ EditRelation(
-        subject = Some(from),
+      relations :+ EditRelation(
+        id = relations.length,
+        subject = None,
         predicate = None,
         `object` = None
       )
-    })
-  }
-  def saveRelations(): Unit = {
-    dbVar.update(db => {
-      val edited = relationsVar.now()
-      val (previous, partial) = edited.partition(_.`object`.isDefined)
-      val (defined, last) = previous.splitAt(previous.length - 1)
-      db.saveRelations(
-        edited.map(r =>
-          Relation(r.subject.get, r.`object`.get, r.predicate.get)
-        )
-      ) // todo
     })
   }
   def body: HtmlElement = div(
     div(
       display.flex,
       h3(margin("0em"), "New relations"),
-      button("Save", onClick --> { _ => { saveRelations() } })
     ),
     div(
       display.flex,
@@ -152,7 +137,7 @@ case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
 case class AddRelation(
     dbVar: Var[Database],
     relation: EditRelation,
-    newRelation: (from: URI) => Unit
+    newRelation: () => Unit
 ) extends Component {
   val relationVar = Var(relation)
   val db = dbVar.now()
@@ -164,14 +149,14 @@ case class AddRelation(
     display.flex,
     flexDirection.row,
     Input(
-      _.readonly := true,
+      //_.readonly := true,
       _.placeholder := "Subject",
       _.showClearIcon := true,
-      value <-- relationVar.signal.map(_.subject.map(idToString).getOrElse("")),
+      value <-- relationVar.signal.map(_.subject.map(_.value).getOrElse("")),
       onInput.mapToValue --> { value =>
         relationVar.update(
           _.copy(subject =
-            if (value.isEmpty()) None else Some(stringToRelationId(value))
+            if (value.isEmpty()) None else Some(URI(value))
           )
         )
       }
@@ -180,12 +165,12 @@ case class AddRelation(
       _.placeholder := "Predicate",
       _.showClearIcon := true,
       value <-- relationVar.signal.map(
-        _.predicate.map(idToString).getOrElse("")
+        _.predicate.map(_.value).getOrElse("")
       ),
       onInput.mapToValue --> { value =>
         relationVar.update(
           _.copy(predicate =
-            if (value.isEmpty()) None else Some(stringToRelationId(value))
+            if (value.isEmpty()) None else Some(URI(value))
           )
         )
       }
@@ -196,36 +181,43 @@ case class AddRelation(
       Input(
         _.placeholder := "Object",
         _.showClearIcon := true,
-        value <-- relationVar.signal.map(
-          _.`object`.map(idToString).getOrElse("")
+        value <-- relationVar.signal.map(value => {
+          value.`object` match {
+            case Some(Value(v)) => v
+            case Some(URI(v))    => ""
+            case None => ""
+          }
+
+        }
         ),
         onInput.mapToValue --> { value =>
           relationVar.update(
             _.copy(`object` =
-              if (value.isEmpty()) None else Some(stringToId(value))
+              if (value.isEmpty()) None else Some(Value(value))
             )
           )
         }
-        // onInput.mapToValue --> { newValue => newValueVar.update(_ => if(newValue.isEmpty()) None else Some(newValue)) }
       ),
       select(
         value <-- relationVar.signal.map(
           _.`object`.map(idToString).getOrElse("")
         ),
         allOptions,
-        onChange.mapToValue --> { v => newRelation(stringToRelationId(v)) }
+        onChange.mapToValue --> { value =>
+          relationVar.update(
+            _.copy(`object` =
+              if (value.isEmpty()) None else Some(stringToId(value))
+            )
+          )
+        },
       )
     ),
     button(
       "Add",
-      onClick --> { _ =>
-        {
-          val relation = relationVar.now()
-          if (relation.subject.isDefined) {
-            newRelation(relation.subject.get)
-          }
-        }
-      }
+      onClick --> { _ => {
+        val r = relationVar.now()
+        dbVar.update(_.saveRelations(List(r.toRelation.get)))
+      }}
     )
   )
 }
