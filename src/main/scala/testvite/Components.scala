@@ -63,14 +63,14 @@ def viewId(id: Id, db: Database): HtmlElement = id match {
     a(
       marginLeft("1em"),
       aLink,
-      idToString(id),
+      id.value,
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
   case id: URI =>
     a(
       marginLeft("1em"),
       aLink,
-      idToString(id),
+      id.value,
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
 }
