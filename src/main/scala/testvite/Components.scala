@@ -41,7 +41,7 @@ case class ViewRelations(
   def body: HtmlElement = div(
     roundedBorder,
     h3("Relations"),
-    relations.toList.map(r => ViewRelation(r, db, removeRelation))
+    relations.toList.map(r => ViewRelation(r, db, removeRelation, "relation"))
   )
 }
 
@@ -53,7 +53,7 @@ case class ViewReferences(
   def body: HtmlElement = div(
     roundedBorder,
     h3("References"),
-    references.toList.map(r => ViewRelation(r, db, removeRelation))
+    references.toList.map(r => ViewRelation(r, db, removeRelation, "reference"))
   )
 }
 
@@ -74,28 +74,30 @@ def viewId(id: Id, hide: Boolean = false): HtmlElement = id match {
     )
 }
 
-def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
+def relationSentence(relation: Relation, dbVar: Var[Database], viewKind: ViewKind): HtmlElement = {
   val db = dbVar.now()
   div(
     display.flex,
     flexDirection.row,
     viewId(relation.id, hide = true),
-    viewId(relation.subject),
+    if (viewKind == "relation") div() else viewId(relation.subject),
     viewId(relation.predicate),
-    viewId(relation.`object`)
+    if (viewKind == "reference") div() else viewId(relation.`object`)
   )
 }
 
+type ViewKind = "relation" | "reference" | "none"
 case class ViewRelation(
     relation: Relation,
     db: Var[Database],
-    removeRelation: (id: Relation) => Unit
+    removeRelation: (id: Relation) => Unit,
+    viewKind: ViewKind = "none"
 ) extends Component {
   def body: HtmlElement =
     div(
       display.flex,
       flexDirection.row,
-      relationSentence(relation, db),
+      relationSentence(relation, db, viewKind),
       button(
         "X",
         onClick --> { _ => removeRelation(relation) }
@@ -276,7 +278,7 @@ case class SearchResults(results: List[Relation], db: Var[Database])
         marginTop("1em"),
         results.map(e =>
           tr(
-            td(relationSentence(e, db))
+            td(relationSentence(e, db, "none"))
           )
         )
       )
