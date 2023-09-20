@@ -106,13 +106,13 @@ case class ViewRelation(
 case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
   val db = dbVar.now()
   val relationsVar = Var(
-    List(EditRelation(id = 0, subject = None, predicate = None, `object` = None))
+    List(EditRelation(id = URI.newId(), subject = None, predicate = None, `object` = None))
   )
 
   def newRelation(): Unit = {
     relationsVar.update(relations => {
       relations :+ EditRelation(
-        id = relations.length,
+        id = URI.newId(),
         subject = None,
         predicate = None,
         `object` = None
