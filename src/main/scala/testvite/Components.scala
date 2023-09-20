@@ -281,7 +281,7 @@ case class SearchResults(results: List[Relation], db: Var[Database])
     )
 }
 
-case class Add() extends Component {
+case class Add(db: Var[Database]) extends Component {
   var somethingVar: Var[String] = Var("")
   var canAdd: Signal[Boolean] = somethingVar.signal.map(_.nonEmpty)
   def body: HtmlElement =
@@ -305,11 +305,20 @@ case class Add() extends Component {
           }}
         ),
         button(
-          "Add Thing",
+          "Add Named Thing",
           disabled <-- canAdd.map(!_),
           onClick --> { _ => {
-            val something = somethingVar.now()
-            println(something)
+            val newThingId = URI.newId()
+            val newRelations =
+              List(
+                Relation(
+                  id = URI.newId(),
+                  subject = newThingId,
+                  `object` = Value(somethingVar.now()),
+                  predicate = URI("name")
+                )
+              )
+            db.update(_.saveRelations(newRelations))
           }}
         )
       )
@@ -337,7 +346,7 @@ def app(): HtmlElement = {
         flexDirection.row,
         justifyContent.center,
         child <-- Router.router.currentPageSignal.map {
-          case MyPage.Add => Add()
+          case MyPage.Add => Add(dbVar)
           case MyPage.HomePage =>
             div(
               h1("Relate"),
