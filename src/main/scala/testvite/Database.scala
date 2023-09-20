@@ -24,7 +24,7 @@ case class Database(private val relations: Set[Relation]):
   // def getRelation(id: RelationId) = relations.find(r => r.id == id)
   def saveRelations(newRelations: List[Relation]): Database =
     this.copy(relations = relations.concat(newRelations))
-  def remove(id: Relation): Database = this.copy(relations = relations.-(id))
+  def remove(id: URI): Database = this.copy(relations = relations.filter(r => r.id != id))
 
 object Database:
   val empty = Database(Set.empty)

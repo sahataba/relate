@@ -12,13 +12,12 @@ import be.doeraene.webcomponents.ui5.*
 case class ViewObject(
     entity: Entity,
     db: Var[Database],
-    removeRelation: (id: Relation) => Unit
 ) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h1("View: ", idToString(entity.id)),
-    ViewRelations(entity.relations, db, removeRelation),
-    ViewReferences(entity.references, db, removeRelation),
+    ViewRelations(entity.relations, db),
+    ViewReferences(entity.references, db),
     entity.id match {
       case id: URI      => AddRelations(db, id)
       case value: Value => div("todo")
@@ -36,24 +35,22 @@ case class ViewValue(value: Value) extends Component {
 case class ViewRelations(
     relations: Relations,
     db: Var[Database],
-    removeRelation: (id: Relation) => Unit
 ) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("Relations"),
-    relations.toList.map(r => ViewRelation(r, db, removeRelation, "relation"))
+    relations.toList.map(r => ViewRelation(r, db, "relation"))
   )
 }
 
 case class ViewReferences(
     references: References,
     db: Var[Database],
-    removeRelation: (id: Relation) => Unit
 ) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
     h3("References"),
-    references.toList.map(r => ViewRelation(r, db, removeRelation, "reference"))
+    references.toList.map(r => ViewRelation(r, db, "reference"))
   )
 }
 
@@ -90,7 +87,6 @@ type ViewKind = "relation" | "reference" | "none"
 case class ViewRelation(
     relation: Relation,
     db: Var[Database],
-    removeRelation: (id: Relation) => Unit,
     viewKind: ViewKind = "none"
 ) extends Component {
   def body: HtmlElement =
@@ -100,7 +96,7 @@ case class ViewRelation(
       relationSentence(relation, db, viewKind),
       button(
         "X",
-        onClick --> { _ => removeRelation(relation) }
+        onClick --> { _ => db.update(_.remove(relation.id)) }
       )
     )
 }
@@ -330,9 +326,6 @@ def app(): HtmlElement = {
       dom.window.localStorage.setItem("db", db.toJson)
     })
     .map(s => span(""))
-  def removeRelation(id: Relation): Unit = {
-    dbVar.update(_.remove(id))
-  }
   div(
     NavBar(),
     div(
@@ -353,7 +346,7 @@ def app(): HtmlElement = {
           case MyPage.View(id) =>
             div(
               child <-- dbVar.signal.map(db =>
-                ViewObject(db.get(id), dbVar, removeRelation)
+                ViewObject(db.get(id), dbVar)
               )
             )
           case MyPage.Search(query) => Search(query, dbVar)
