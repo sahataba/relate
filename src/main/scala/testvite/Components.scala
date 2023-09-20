@@ -287,17 +287,22 @@ case class SearchResults(results: List[Relation], db: Var[Database])
 
 case class Add() extends Component {
   var somethingVar: Var[String] = Var("")
+  var canAdd: Signal[Boolean] = somethingVar.signal.map(_.nonEmpty)
   def body: HtmlElement =
     div(
       h1("Add"),
       Input(
         _.placeholder := "Something",
+        onInput.mapToValue --> { value =>
+          somethingVar.update(_ => value)
+        }
       ),
       div(
         display.flex,
         flexDirection.row,
         button(
           "Add Value",
+          disabled <-- canAdd.map(!_),
           onClick --> { _ => {
             val something = somethingVar.now()
             println(something)
@@ -305,6 +310,7 @@ case class Add() extends Component {
         ),
         button(
           "Add Thing",
+          disabled <-- canAdd.map(!_),
           onClick --> { _ => {
             val something = somethingVar.now()
             println(something)
