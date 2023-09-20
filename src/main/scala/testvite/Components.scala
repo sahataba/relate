@@ -134,6 +134,16 @@ case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
   )
 }
 
+def selOption(p : URI | Value) =
+  p match {
+    case URI(v) => Input.suggestion(
+      _.text := v
+    )
+    case Value(v) => Input.suggestion(
+      _.text := v
+    )
+  }
+
 case class AddRelation(
     dbVar: Var[Database],
     relation: EditRelation,
@@ -164,11 +174,7 @@ case class AddRelation(
           )
         )
       },
-       allSubjects.map(p =>
-        Input.suggestion(
-          _.text := p.value
-        )
-      )
+       allIds.map(selOption)
     ),
     Input(
       _.placeholder := "Predicate",
@@ -184,11 +190,7 @@ case class AddRelation(
           )
         )
       },
-      allPredicates.map(p =>
-        Input.suggestion(
-          _.text := p.value
-        )
-      )
+      allIds.map(selOption)
     ),
     div(
       display.flex,
