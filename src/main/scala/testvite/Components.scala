@@ -285,6 +285,35 @@ case class SearchResults(results: List[Relation], db: Var[Database])
     )
 }
 
+case class Add() extends Component {
+  var somethingVar: Var[String] = Var("")
+  def body: HtmlElement =
+    div(
+      h1("Add"),
+      Input(
+        _.placeholder := "Something",
+      ),
+      div(
+        display.flex,
+        flexDirection.row,
+        button(
+          "Add Value",
+          onClick --> { _ => {
+            val something = somethingVar.now()
+            println(something)
+          }}
+        ),
+        button(
+          "Add Thing",
+          onClick --> { _ => {
+            val something = somethingVar.now()
+            println(something)
+          }}
+        )
+      )
+    )
+}
+
 def app(): HtmlElement = {
   val localData = dom.window.localStorage.getItem("db")
   val initialData = if (localData == null) data else localData
@@ -309,10 +338,7 @@ def app(): HtmlElement = {
         flexDirection.row,
         justifyContent.center,
         child <-- Router.router.currentPageSignal.map {
-          case MyPage.Add =>
-            div(
-              h1("Add"),
-            )
+          case MyPage.Add => Add()
           case MyPage.HomePage =>
             div(
               h1("Relate"),
