@@ -309,6 +309,10 @@ def app(): HtmlElement = {
         flexDirection.row,
         justifyContent.center,
         child <-- Router.router.currentPageSignal.map {
+          case MyPage.Add =>
+            div(
+              h1("Add"),
+            )
           case MyPage.HomePage =>
             div(
               h1("Relate"),
