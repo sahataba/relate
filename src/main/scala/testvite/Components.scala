@@ -17,7 +17,6 @@ case class ViewObject(
   def body: HtmlElement = div(
     roundedBorder,
     h1("View: ", idToString(entity.id)),
-    viewId(entity.id, db.now()),
     ViewRelations(entity.relations, db, removeRelation),
     ViewReferences(entity.references, db, removeRelation),
     entity.id match {
@@ -58,19 +57,19 @@ case class ViewReferences(
   )
 }
 
-def viewId(id: Id, db: Database): HtmlElement = id match {
+def viewId(id: Id, hide: Boolean = false): HtmlElement = id match {
   case id: Value =>
     a(
       marginLeft("1em"),
       aLink,
-      id.value,
+      if (hide) "ID" else id.value,
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
   case id: URI =>
     a(
       marginLeft("1em"),
       aLink,
-      id.value,
+      if (hide) "ID" else id.value,
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
 }
@@ -80,9 +79,10 @@ def relationSentence(relation: Relation, dbVar: Var[Database]): HtmlElement = {
   div(
     display.flex,
     flexDirection.row,
-    viewId(relation.subject, db),
-    viewId(relation.predicate, db),
-    viewId(relation.`object`, db)
+    viewId(relation.id, hide = true),
+    viewId(relation.subject),
+    viewId(relation.predicate),
+    viewId(relation.`object`)
   )
 }
 
