@@ -38,8 +38,9 @@ case class ViewRelations(
 ) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
-    h3("Relations"),
-    relations.toList.map(r => ViewRelation(r, db, "relation"))
+    div(display.flex, flexDirection.row, h3("Relations"), Button("Add", onClick --> { _ =>})),
+    relations.toList.map(r => ViewRelation(r, db, "relation")),
+    Add(db)
   )
 }
 
@@ -54,6 +55,10 @@ case class ViewReferences(
   )
 }
 
+//expand with special predicat "name"
+//think of combining add and search page
+//predicate order: name
+//one level depth
 def viewId(id: Id, hide: Boolean = false): HtmlElement = id match {
   case id: Value =>
     a(
@@ -94,7 +99,7 @@ case class ViewRelation(
       display.flex,
       flexDirection.row,
       relationSentence(relation, db, viewKind),
-      button(
+      Button(
         "X",
         onClick --> { _ => db.update(_.remove(relation.id)) }
       )
@@ -132,6 +137,7 @@ case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
   )
 }
 
+//reuse viewId here
 def selOption(p : URI | Value) =
   p match {
     case URI(v) => Input.suggestion(
@@ -227,7 +233,7 @@ case class AddRelation(
         },
       )
     ),
-    button(
+    Button(
       "Add",
       onClick --> { _ => {
         val r = relationVar.now()
@@ -286,7 +292,9 @@ case class Add(db: Var[Database]) extends Component {
   var canAdd: Signal[Boolean] = somethingVar.signal.map(_.nonEmpty)
   def body: HtmlElement =
     div(
-      h1("Add"),
+      display.flex,
+      flexDirection.row,
+      h3("Add"),
       Input(
         _.placeholder := "Something",
         onInput.mapToValue --> { value =>
@@ -296,7 +304,7 @@ case class Add(db: Var[Database]) extends Component {
       div(
         display.flex,
         flexDirection.row,
-        button(
+        Button(
           "Add Value",
           disabled <-- canAdd.map(!_),
           onClick --> { _ => {
@@ -304,7 +312,7 @@ case class Add(db: Var[Database]) extends Component {
             println(something)
           }}
         ),
-        button(
+        Button(
           "Add Named Thing",
           disabled <-- canAdd.map(!_),
           onClick --> { _ => {
