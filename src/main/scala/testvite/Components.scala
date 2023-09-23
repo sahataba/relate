@@ -133,11 +133,8 @@ case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
       )
     })
   }
-  def body: HtmlElement = div(
-    div(
-      display.flex,
-      Title(margin("0em"), "New relations"),
-    ),
+  def body: HtmlElement = Panel(
+    _.headerText := "New Relations",
     div(
       display.flex,
       flexDirection.row,
@@ -262,13 +259,12 @@ case class Search(query: String, db: Var[Database]) extends Component {
 }
 
 case class SearchQuery(query: String) extends Component {
-  def body: HtmlElement = div(
-    roundedBorder,
+  def body: HtmlElement = Panel(
+    _.headerText := "Query",
     div(
       marginTop("1em"),
       display.flex,
       flexDirection.row,
-      h4(margin("0em"), "Search by"),
       input(
         autoFocus(true),
         marginLeft("0.5em"),
@@ -285,13 +281,15 @@ case class SearchQuery(query: String) extends Component {
 case class SearchResults(results: List[Relation], db: Var[Database])
     extends Component {
   def body: HtmlElement =
-    table(
-      roundedBorder,
-      tbody(
-        marginTop("1em"),
-        results.map(e =>
-          tr(
-            td(relationSentence(e, db, "none"))
+    Panel(
+      _.headerText := "Results",
+      table(
+        tbody(
+          marginTop("1em"),
+          results.map(e =>
+            tr(
+              td(relationSentence(e, db, "none"))
+            )
           )
         )
       )
@@ -302,10 +300,8 @@ case class Add(db: Var[Database]) extends Component {
   var somethingVar: Var[String] = Var("")
   var canAdd: Signal[Boolean] = somethingVar.signal.map(_.nonEmpty)
   def body: HtmlElement =
-    div(
-      display.flex,
-      flexDirection.row,
-      Title("Add"),
+    Panel(
+      _.headerText := "Add",
       Input(
         _.placeholder := "Something",
         onInput.mapToValue --> { value =>
