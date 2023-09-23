@@ -55,36 +55,48 @@ case class ViewReferences(
   )
 }
 
+def toS(id: Id): String = id match {
+  case id: URI   => "ID"
+  case id: Value => id.value
+}
+
+def getName(id: Id, db: Var[Database]): String = {
+  val e = db.now().get(id)
+  e.relations
+    .find(_.predicate == URI("name"))
+    .map(a => toS(a.`object`))
+    .getOrElse("ID")
+}
+
 //expand with special predicat "name"
 //think of combining add and search page
 //predicate order: name
 //one level depth
-def viewId(id: Id, hide: Boolean = false): HtmlElement = id match {
+def viewId(id: Id, db: Var[Database], hide: Boolean = false): HtmlElement = id match {
   case id: Value =>
     a(
       marginLeft("1em"),
       aLink,
-      if (hide) "ID" else id.value,
+      if (hide) getName(id, db) else id.value,
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
   case id: URI =>
     a(
       marginLeft("1em"),
       aLink,
-      if (hide) "ID" else id.value,
+      if (hide) s"${getName(id, db)}" else id.value,
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
 }
 
 def relationSentence(relation: Relation, dbVar: Var[Database], viewKind: ViewKind): HtmlElement = {
-  val db = dbVar.now()
   div(
     display.flex,
     flexDirection.row,
-    viewId(relation.id, hide = true),
-    if (viewKind == "relation") div() else viewId(relation.subject),
-    viewId(relation.predicate),
-    if (viewKind == "reference") div() else viewId(relation.`object`)
+    viewId(relation.id, dbVar, hide = true),
+    if (viewKind == "relation") div() else viewId(relation.subject, dbVar, hide = true),
+    viewId(relation.predicate, dbVar, hide= false),
+    if (viewKind == "reference") div() else viewId(relation.`object`, dbVar)
   )
 }
 
