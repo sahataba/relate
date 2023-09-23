@@ -308,34 +308,30 @@ case class Add(db: Var[Database]) extends Component {
           somethingVar.update(_ => value)
         }
       ),
-      div(
-        display.flex,
-        flexDirection.row,
-        Button(
-          "Add Value",
-          disabled <-- canAdd.map(!_),
-          onClick --> { _ => {
-            val something = somethingVar.now()
-            println(something)
-          }}
-        ),
-        Button(
-          "Add Named Thing",
-          disabled <-- canAdd.map(!_),
-          onClick --> { _ => {
-            val newThingId = URI.newId()
-            val newRelations =
-              List(
-                Relation(
-                  id = URI.newId(),
-                  subject = newThingId,
-                  `object` = Value(somethingVar.now()),
-                  predicate = URI("name")
-                )
+      Button(
+        "Add Value",
+        disabled <-- canAdd.map(!_),
+        onClick --> { _ => {
+          val something = somethingVar.now()
+          println(something)
+        }}
+      ),
+      Button(
+        "Add Named Thing",
+        disabled <-- canAdd.map(!_),
+        onClick --> { _ => {
+          val newThingId = URI.newId()
+          val newRelations =
+            List(
+              Relation(
+                id = URI.newId(),
+                subject = newThingId,
+                `object` = Value(somethingVar.now()),
+                predicate = URI("name")
               )
-            db.update(_.saveRelations(newRelations))
-          }}
-        )
+            )
+          db.update(_.saveRelations(newRelations))
+        }}
       )
     )
 }
