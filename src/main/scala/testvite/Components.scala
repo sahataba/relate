@@ -8,6 +8,7 @@ import org.scalajs.dom
 
 import Page as MyPage
 import be.doeraene.webcomponents.ui5.*
+import be.doeraene.webcomponents.ui5.configkeys.{ButtonDesign, IconName}
 
 case class ViewObject(
     entity: Entity,
@@ -109,7 +110,8 @@ case class ViewRelation(
       flexDirection.row,
       relationSentence(relation, db, viewKind),
       Button(
-        "X",
+        _.design := ButtonDesign.Transparent,
+        _.icon := IconName.delete,
         onClick --> { _ => db.update(_.remove(relation.id)) }
       )
     )
