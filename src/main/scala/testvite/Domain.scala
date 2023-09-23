@@ -36,7 +36,3 @@ object URI:
 object Id:
   given JsonDecoder[Id] = JsonDecoder[String].map(stringToId)
   given JsonEncoder[Id] = JsonEncoder[String].contramap(idToString)
-
-  //we want to automatically generate new Ids
-  //user should never see ids, it sees viewFragment(id), in (3 | 2) tabs Relations/ References/
-  //add icon inplace of unredable ids
