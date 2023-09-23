@@ -14,7 +14,6 @@ case class ViewObject(
     db: Var[Database],
 ) extends Component {
   def body: HtmlElement = div(
-    roundedBorder,
     Title("View: ", idToString(entity.id)),
     ViewRelations(entity.relations, db),
     ViewReferences(entity.references, db),
@@ -36,9 +35,8 @@ case class ViewRelations(
     relations: Relations,
     db: Var[Database],
 ) extends Component {
-  def body: HtmlElement = div(
-    roundedBorder,
-    div(display.flex, flexDirection.row, Title("Relations"), Button("Add", onClick --> { _ =>})),
+  def body: HtmlElement = Panel(
+    _.headerText := "Relations",
     relations.toList.map(r => ViewRelation(r, db, "relation")),
     Add(db)
   )
@@ -48,9 +46,8 @@ case class ViewReferences(
     references: References,
     db: Var[Database],
 ) extends Component {
-  def body: HtmlElement = div(
-    roundedBorder,
-    Title("References"),
+  def body: HtmlElement = Panel(
+    _.headerText := "References",
     references.toList.map(r => ViewRelation(r, db, "reference"))
   )
 }
