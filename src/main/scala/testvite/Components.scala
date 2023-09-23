@@ -74,16 +74,16 @@ def getName(id: Id, db: Var[Database]): String = {
 //one level depth
 def viewId(id: Id, db: Var[Database], hide: Boolean = false): HtmlElement = id match {
   case id: Value =>
-    a(
+    Link(
       marginLeft("1em"),
-      aLink,
+      //aLink,
       if (hide) getName(id, db) else id.value,
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
   case id: URI =>
-    a(
+    Link(
       marginLeft("1em"),
-      aLink,
+      //aLink,
       if (hide) s"${getName(id, db)}" else id.value,
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
