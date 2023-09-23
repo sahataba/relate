@@ -15,7 +15,7 @@ case class ViewObject(
 ) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
-    h1("View: ", idToString(entity.id)),
+    Title("View: ", idToString(entity.id)),
     ViewRelations(entity.relations, db),
     ViewReferences(entity.references, db),
     entity.id match {
@@ -38,7 +38,7 @@ case class ViewRelations(
 ) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
-    div(display.flex, flexDirection.row, h3("Relations"), Button("Add", onClick --> { _ =>})),
+    div(display.flex, flexDirection.row, Title("Relations"), Button("Add", onClick --> { _ =>})),
     relations.toList.map(r => ViewRelation(r, db, "relation")),
     Add(db)
   )
@@ -50,7 +50,7 @@ case class ViewReferences(
 ) extends Component {
   def body: HtmlElement = div(
     roundedBorder,
-    h3("References"),
+    Title("References"),
     references.toList.map(r => ViewRelation(r, db, "reference"))
   )
 }
@@ -137,7 +137,7 @@ case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
   def body: HtmlElement = div(
     div(
       display.flex,
-      h3(margin("0em"), "New relations"),
+      Title(margin("0em"), "New relations"),
     ),
     div(
       display.flex,
@@ -306,7 +306,7 @@ case class Add(db: Var[Database]) extends Component {
     div(
       display.flex,
       flexDirection.row,
-      h3("Add"),
+      Title("Add"),
       Input(
         _.placeholder := "Something",
         onInput.mapToValue --> { value =>
@@ -369,7 +369,7 @@ def app(): HtmlElement = {
           case MyPage.Add => Add(dbVar)
           case MyPage.HomePage =>
             div(
-              h1("Relate"),
+              Title("Relate"),
               Graph()
             )
           case MyPage.View(id) =>
