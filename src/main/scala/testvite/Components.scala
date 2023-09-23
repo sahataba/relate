@@ -63,7 +63,7 @@ def getName(id: Id, db: Var[Database]): String = {
   e.relations
     .find(_.predicate == URI("name"))
     .map(a => toS(a.`object`))
-    .getOrElse("ID")
+    .getOrElse(toS(id))
 }
 
 //expand with special predicat "name"
@@ -93,8 +93,8 @@ def relationSentence(relation: Relation, dbVar: Var[Database], viewKind: ViewKin
     flexDirection.row,
     viewId(relation.id, dbVar, hide = true),
     if (viewKind == "relation") div() else viewId(relation.subject, dbVar, hide = true),
-    viewId(relation.predicate, dbVar, hide= false),
-    if (viewKind == "reference") div() else viewId(relation.`object`, dbVar)
+    viewId(relation.predicate, dbVar, hide= true),
+    if (viewKind == "reference") div() else viewId(relation.`object`, dbVar, hide = true)
   )
 }
 
