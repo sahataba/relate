@@ -14,7 +14,7 @@ final case class NavBar() extends Component {
       fontSize("18px"),
       navLink("Home", HomePage),
       navLink("View", View(Value("v-9"))), // todo
-      navLink("Add", Add),
+      navLink("Add", Add(None)),
       navLink("Search", Search("")),
       navLink("Database", ViewDatabase)
     )
