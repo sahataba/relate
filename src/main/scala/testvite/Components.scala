@@ -315,6 +315,11 @@ case class SearchResults(resultsSignal: Signal[List[Relation]], db: Var[Database
 case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
   var somethingVar: Var[String] = Var("")
   var canAdd: Signal[Boolean] = somethingVar.signal.map(_.nonEmpty)
+  val res =
+    for {
+      q <- somethingVar.signal
+      d <- db.signal
+    } yield if(q.isEmpty()) Nil else d.search(q)
   def body: HtmlElement =
     Panel(
       _.headerText := "Add",
@@ -353,7 +358,8 @@ case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
             )
           db.update(_.saveRelations(newRelations))
         }}
-      )
+      ),
+      SearchResults(res, db)
     )
 }
 
