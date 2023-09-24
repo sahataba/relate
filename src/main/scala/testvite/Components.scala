@@ -255,7 +255,7 @@ case class AddRelation(
 case class Search(query: String, db: Var[Database]) extends Component {
   def body: HtmlElement = div(
     SearchQuery(query),
-    SearchResults(db.now().search(query), db)
+    SearchResults(db.now().search(query), db)//todo fix
   )
 }
 
@@ -289,7 +289,16 @@ case class SearchResults(results: List[Relation], db: Var[Database])
           marginTop("1em"),
           results.map(e =>
             tr(
-              td(relationSentence(e, db, "none"))
+              td(
+                display.flex,
+                flexDirection.row,
+                relationSentence(e, db, "none"),
+                Button(
+                  _.design := ButtonDesign.Transparent,
+                  _.icon := IconName.delete,
+                  onClick --> { _ => db.update(_.remove(e.id)) }
+                ),
+              )
             )
           )
         )
@@ -321,12 +330,17 @@ case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
         "Add Named Thing",
         disabled <-- canAdd.map(!_),
         onClick --> { _ => {
-          val newThingId = URI.newId()
+          //todo
+          val thingId = toThing match {
+            case Some(URI(uri)) => URI(uri)
+            case Some(Value(_)) => URI.newId()
+            case None => URI.newId()
+          }
           val newRelations =
             List(
               Relation(
                 id = URI.newId(),
-                subject = newThingId,
+                subject = thingId,
                 `object` = Value(somethingVar.now()),
                 predicate = URI("name")
               )
