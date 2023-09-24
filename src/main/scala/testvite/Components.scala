@@ -91,6 +91,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database], viewKind: ViewKin
   div(
     display.flex,
     flexDirection.row,
+    alignItems.center,
     viewId(relation.id, dbVar, hide = true),
     if (viewKind == "relation") div() else viewId(relation.subject, dbVar, hide = true),
     viewId(relation.predicate, dbVar, hide= true),
