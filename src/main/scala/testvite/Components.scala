@@ -253,13 +253,21 @@ case class AddRelation(
 }
 
 case class Search(query: String, db: Var[Database]) extends Component {
+  val queryVar: Var[String] = Var(query)
+  val res =
+    for {
+      q <- queryVar.signal
+      d <- db.signal
+    } yield d.search(q)
   def body: HtmlElement = div(
-    SearchQuery(query),
-    SearchResults(db.now().search(query), db)//todo fix
+    SearchQuery(queryVar),
+    SearchResults(
+      res,
+      db)
   )
 }
 
-case class SearchQuery(query: String) extends Component {
+case class SearchQuery(queryVar: Var[String]) extends Component {
   def body: HtmlElement = Panel(
     _.headerText := "Query",
     div(
@@ -270,16 +278,14 @@ case class SearchQuery(query: String) extends Component {
         autoFocus(true),
         marginLeft("0.5em"),
         typ := "text",
-        value := query,
-        onInput.mapToValue --> { query =>
-          Router.router.pushState(MyPage.Search(query))
-        }
+        value <-- queryVar,
+        onInput.mapToValue --> { query => queryVar.update(v => query)}
       )
     )
   )
 }
 
-case class SearchResults(results: List[Relation], db: Var[Database])
+case class SearchResults(resultsSignal: Signal[List[Relation]], db: Var[Database])
     extends Component {
   def body: HtmlElement =
     Panel(
@@ -287,7 +293,7 @@ case class SearchResults(results: List[Relation], db: Var[Database])
       table(
         tbody(
           marginTop("1em"),
-          results.map(e =>
+          children <-- resultsSignal.map(_.map(e =>
             tr(
               td(
                 display.flex,
@@ -300,7 +306,7 @@ case class SearchResults(results: List[Relation], db: Var[Database])
                 ),
               )
             )
-          )
+          ))
         )
       )
     )
