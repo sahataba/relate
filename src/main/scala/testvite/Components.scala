@@ -16,7 +16,7 @@ case class ViewObject(
 ) extends Component {
   def body: HtmlElement = div(
     Title("View: ", idToString(entity.id)),
-    ViewRelations(entity.relations, db),
+    ViewRelations(entity, db),
     ViewReferences(entity.references, db),
     entity.id match {
       case id: URI      => AddRelations(db, id)
@@ -33,13 +33,13 @@ case class ViewValue(value: Value) extends Component {
 }
 
 case class ViewRelations(
-    relations: Relations,
+    entity: Entity,
     db: Var[Database],
 ) extends Component {
   def body: HtmlElement = Panel(
     _.headerText := "Relations",
-    relations.toList.map(r => ViewRelation(r, db, "relation")),
-    Add(db)
+    entity.relations.toList.map(r => ViewRelation(r, db, "relation")),
+    Add(db, Some(entity.id))
   )
 }
 
@@ -297,7 +297,7 @@ case class SearchResults(results: List[Relation], db: Var[Database])
     )
 }
 
-case class Add(db: Var[Database]) extends Component {
+case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
   var somethingVar: Var[String] = Var("")
   var canAdd: Signal[Boolean] = somethingVar.signal.map(_.nonEmpty)
   def body: HtmlElement =
@@ -358,7 +358,7 @@ def app(): HtmlElement = {
         flexDirection.row,
         justifyContent.center,
         child <-- Router.router.currentPageSignal.map {
-          case MyPage.Add => Add(dbVar)
+          case MyPage.Add(to) => Add(dbVar, to)
           case MyPage.HomePage =>
             div(
               Title("Relate"),

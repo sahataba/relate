@@ -8,7 +8,7 @@ import zio.json._
 sealed trait Page
 
 object Page:
-  case object Add extends Page
+  case class Add(to: Option[Id]) extends Page
   case class View(id: Id) extends Page
   case object HomePage extends Page
   case class Search(query: String) extends Page
@@ -23,8 +23,14 @@ object Router:
   val homeRoute: Route[Page.HomePage.type, Unit] =
     Route.static(HomePage, root / endOfSegments)
 
-  val addRoute: Route[Page.Add.type, Unit] =
-    Route.static(Add, root / endOfSegments)
+  //val addRoute: Route[Page.Add.type, Unit] =
+  //  Route.static(Add, root / endOfSegments)
+
+  val addRoute = Route[Add, String](
+    encode = page => page.to.map(idToString).getOrElse(""),
+    decode = arg => Add(if (arg == "") None else Some(stringToId((arg)))),
+    pattern = root / "add" / segment[String] / endOfSegments
+  )
 
   val viewDatabaseRoute: Route[Page.ViewDatabase.type, Unit] =
     Route.static(ViewDatabase, root / "database" / endOfSegments)
