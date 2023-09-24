@@ -285,29 +285,28 @@ case class SearchQuery(queryVar: Var[String]) extends Component {
   )
 }
 
-case class SearchResults(resultsSignal: Signal[List[Relation]], db: Var[Database])
+case class SearchResults(resultsSignal: Signal[List[Relation]], dbVar: Var[Database], viewKind: ViewKind = "none")
     extends Component {
   def body: HtmlElement =
     Panel(
       _.headerText := "Results",
-      table(
-        tbody(
-          marginTop("1em"),
+      Table(
+        _.slots.columns := Table.column(Label("")),
+        _.slots.columns := Table.column(Label("Subject")),
+        _.slots.columns := Table.column(Label("Predicate")),
+        _.slots.columns := Table.column(Label("Object")),
+        _.slots.columns := Table.column(Label("")),
           children <-- resultsSignal.map(_.map(e =>
-            tr(
-              td(
-                display.flex,
-                flexDirection.row,
-                relationSentence(e, db, "none"),
-                Button(
+            Table.row(
+              _.cell(viewId(e.id, dbVar, hide = true)),
+              _.cell(if (viewKind == "relation") div() else viewId(e.subject, dbVar, hide = true)),
+              _.cell(viewId(e.predicate, dbVar, hide= true)),
+              _.cell(if (viewKind == "reference") div() else viewId(e.`object`, dbVar, hide = true)), _.cell(Button(
                   _.design := ButtonDesign.Transparent,
                   _.icon := IconName.delete,
-                  onClick --> { _ => db.update(_.remove(e.id)) }
-                ),
-              )
-            )
+                  onClick --> { _ => dbVar.update(_.remove(e.id)) }
+                ))),
           ))
-        )
       )
     )
 }
