@@ -61,7 +61,7 @@ def toS(id: Id): String = id match {
 def getName(id: Id, db: Var[Database]): String = {
   val e = db.now().get(id)
   e.relations
-    .find(_.predicate == URI("name"))
+    .find(_.predicate == Predicate.name)
     .map(a => toS(a.`object`))
     .getOrElse(toS(id))
 }
@@ -311,6 +311,8 @@ case class SearchResults(resultsSignal: Signal[List[Relation]], dbVar: Var[Datab
     )
 }
 
+//todo: remove delete
+//user adds subject from search result relations, to id predicate, by clicking on row,
 case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
   var somethingVar: Var[String] = Var("")
   var canAdd: Signal[Boolean] = somethingVar.signal.map(_.nonEmpty)
@@ -333,17 +335,9 @@ case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
         disabled <-- canAdd.map(!_),
         onClick --> { _ => {
           val something = somethingVar.now()
-          println(something)
-        }}
-      ),
-      Button(
-        "Add Named Thing",
-        disabled <-- canAdd.map(!_),
-        onClick --> { _ => {
-          //todo
           val thingId = toThing match {
             case Some(URI(uri)) => URI(uri)
-            case Some(Value(_)) => URI.newId()
+            case Some(Value(_)) => ???
             case None => URI.newId()
           }
           val newRelations =
@@ -351,10 +345,36 @@ case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
               Relation(
                 id = URI.newId(),
                 subject = thingId,
-                `object` = Value(somethingVar.now()),
-                predicate = URI("name")
+                `object` = Value(something),
+                predicate = Predicate.blank
               )
             )
+          db.update(_.saveRelations(newRelations))
+        }}
+      ),
+      Button(
+        "Add Named Thing",
+        disabled <-- canAdd.map(!_),
+        onClick --> { _ => {
+          val newtThingId = URI.newId()
+          val newRelations =
+            List(
+              Relation(
+                id = URI.newId(),
+                subject = newtThingId,
+                `object` = Value(somethingVar.now()),
+                predicate = Predicate.name
+              )
+            ) ++ toThing.map({
+              case t: URI => Relation(
+                id = URI.newId(),
+                subject = t,
+                `object` = newtThingId,
+                predicate = Predicate.blank
+              )
+              case t: Value => ???
+            }).toList
+
           db.update(_.saveRelations(newRelations))
         }}
       ),

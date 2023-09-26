@@ -11,3 +11,7 @@ val platformFunctions = List(
   "localization",//date formatting
 
 )
+
+object Predicate:
+  val name = URI("name")
+  val blank = URI("blank")
