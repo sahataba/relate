@@ -324,6 +324,7 @@ case class SearchResults(
               _.cell(
                 if (viewKind != "reference")
                   Button(
+                    hidden := toThing.isEmpty,
                     _.design := ButtonDesign.Transparent,
                     _.icon := IconName.add,
                     onClick --> { _ =>
@@ -376,7 +377,7 @@ case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
         disabled <-- canAdd.map(!_),
         onClick --> { _ => Manager.exec(db)(AddNewThing(somethingVar.now(), toThing))}
       ),
-      SearchResults(res, db, "none", toThing)
+      child <-- canAdd.map(can => if (can) SearchResults(res, db, "none", toThing) else div())
     )
 }
 
