@@ -306,6 +306,7 @@ case class SearchResults(
         _.slots.columns := Table.column(Label("Subject")),
         _.slots.columns := Table.column(Label("Predicate")),
         _.slots.columns := Table.column(Label("Object")),
+        _.slots.columns := Table.column(Label("")),//object action
         _.slots.columns := Table.column(Label("")),
           children <-- resultsSignal.map(_.map(e =>
             Table.row(
@@ -318,22 +319,27 @@ case class SearchResults(
                 else
                   div(
                     viewId(e.`object`, dbVar, hide = true),
-                    Button(
-                      _.design := ButtonDesign.Transparent,
-                      _.icon := IconName.add,
-                      onClick --> { _ =>
-                        toThing match {
-                          case Some(to) => {
-                            to match {
-                              case to: URI => Manager.exec(dbVar)(LinkThing(e.`object`, to))
-                              case to: Value =>
-                            }
-                          }
-                          case None => 
-                        }
-                      }
-                    )
                   )
+              ),
+              _.cell(
+                if (viewKind != "reference")
+                  Button(
+                    _.design := ButtonDesign.Transparent,
+                    _.icon := IconName.add,
+                    onClick --> { _ =>
+                      toThing match {
+                        case Some(to) => {
+                          to match {
+                            case to: URI => Manager.exec(dbVar)(LinkThing(e.`object`, to))
+                            case to: Value =>
+                          }
+                        }
+                        case None => 
+                      }
+                    }
+                  )
+                else
+                  div()
               ),
               _.cell(actions(e))),
           ))
