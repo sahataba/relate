@@ -355,28 +355,7 @@ case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
       Button(
         "Add Named Thing",
         disabled <-- canAdd.map(!_),
-        onClick --> { _ => {
-          val newtThingId = URI.newId()
-          val newRelations =
-            List(
-              Relation(
-                id = URI.newId(),
-                subject = newtThingId,
-                `object` = Value(somethingVar.now()),
-                predicate = Predicate.name
-              )
-            ) ++ toThing.map({
-              case t: URI => Relation(
-                id = URI.newId(),
-                subject = t,
-                `object` = newtThingId,
-                predicate = Predicate.blank
-              )
-              case t: Value => ???
-            }).toList
-
-          db.update(_.saveRelations(newRelations))
-        }}
+        onClick --> { _ => Manager.addNewThing(db)(AddNewThing(somethingVar.now(), toThing))}
       ),
       SearchResults(res, db)
     )
