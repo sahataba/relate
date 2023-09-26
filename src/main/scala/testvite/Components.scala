@@ -333,24 +333,7 @@ case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
       Button(
         "Add Value",
         disabled <-- canAdd.map(!_),
-        onClick --> { _ => {
-          val something = somethingVar.now()
-          val thingId = toThing match {
-            case Some(URI(uri)) => URI(uri)
-            case Some(Value(_)) => ???
-            case None => URI.newId()
-          }
-          val newRelations =
-            List(
-              Relation(
-                id = URI.newId(),
-                subject = thingId,
-                `object` = Value(something),
-                predicate = Predicate.blank
-              )
-            )
-          db.update(_.saveRelations(newRelations))
-        }}
+        onClick --> { _ => Manager.addValue(db)(AddValue(somethingVar.now(), toThing))}
       ),
       Button(
         "Add Named Thing",
