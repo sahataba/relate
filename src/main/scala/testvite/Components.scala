@@ -285,8 +285,19 @@ case class SearchQuery(queryVar: Var[String]) extends Component {
   )
 }
 
-case class SearchResults(resultsSignal: Signal[List[Relation]], dbVar: Var[Database], viewKind: ViewKind = "none")
-    extends Component {
+case class SearchResults(
+  resultsSignal: Signal[List[Relation]],
+  dbVar: Var[Database],
+  viewKind: ViewKind = "none",
+  toThing: Option[Id] = None,
+) extends Component {
+  def actions(e: Relation) =
+    Button(
+      _.design := ButtonDesign.Transparent,
+      _.icon := IconName.delete,
+      onClick --> { _ => dbVar.update(_.remove(e.id)) }
+    )
+
   def body: HtmlElement =
     Panel(
       _.headerText := "Results",
@@ -301,11 +312,30 @@ case class SearchResults(resultsSignal: Signal[List[Relation]], dbVar: Var[Datab
               _.cell(viewId(e.id, dbVar, hide = true)),
               _.cell(if (viewKind == "relation") div() else viewId(e.subject, dbVar, hide = true)),
               _.cell(viewId(e.predicate, dbVar, hide= true)),
-              _.cell(if (viewKind == "reference") div() else viewId(e.`object`, dbVar, hide = true)), _.cell(Button(
-                  _.design := ButtonDesign.Transparent,
-                  _.icon := IconName.delete,
-                  onClick --> { _ => dbVar.update(_.remove(e.id)) }
-                ))),
+              _.cell(
+                if (viewKind == "reference")
+                  div()
+                else
+                  div(
+                    viewId(e.`object`, dbVar, hide = true),
+                    Button(
+                      _.design := ButtonDesign.Transparent,
+                      _.icon := IconName.add,
+                      onClick --> { _ =>
+                        toThing match {
+                          case Some(to) => {
+                            to match {
+                              case to: URI => Manager.exec(dbVar)(LinkThing(e.`object`, to))
+                              case to: Value =>
+                            }
+                          }
+                          case None => 
+                        }
+                      }
+                    )
+                  )
+              ),
+              _.cell(actions(e))),
           ))
       )
     )
@@ -333,14 +363,14 @@ case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
       Button(
         "Add Value",
         disabled <-- canAdd.map(!_),
-        onClick --> { _ => Manager.addValue(db)(AddValue(somethingVar.now(), toThing))}
+        onClick --> { _ => Manager.exec(db)(AddValue(somethingVar.now(), toThing))}
       ),
       Button(
         "Add Named Thing",
         disabled <-- canAdd.map(!_),
-        onClick --> { _ => Manager.addNewThing(db)(AddNewThing(somethingVar.now(), toThing))}
+        onClick --> { _ => Manager.exec(db)(AddNewThing(somethingVar.now(), toThing))}
       ),
-      SearchResults(res, db)
+      SearchResults(res, db, "none", toThing)
     )
 }
 

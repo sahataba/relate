@@ -9,10 +9,26 @@ case class AddNewThing(
 )
 case class AddValue(
   something: String,
-  toThing: Option[Id | Value]
+  toThing: Option[Id]
+)
+
+case class LinkThing(
+  id: Id,
+  toThing: URI,
 )
 object Manager:
-  def addNewThing(db: Var[Database])(cmd: AddNewThing) =
+  def exec(db: Var[Database])(cmd: LinkThing) =
+    val newRelations =
+      List(
+        Relation(
+          id = URI.newId(),
+          subject = cmd.toThing,
+          `object` = cmd.id,
+          predicate = Predicate.blank
+        )
+      )
+    db.update(_.saveRelations(newRelations))
+  def exec(db: Var[Database])(cmd: AddNewThing) =
     val newtThingId = URI.newId()
     val newRelations =
       List(
@@ -32,7 +48,7 @@ object Manager:
         case t: Value => ???
       }).toList
     db.update(_.saveRelations(newRelations))
-  def addValue(db: Var[Database])(cmd: AddValue) = 
+  def exec(db: Var[Database])(cmd: AddValue) = 
     val thingId = cmd.toThing match {
       case Some(URI(uri)) => URI(uri)
       case Some(Value(_)) => ???
