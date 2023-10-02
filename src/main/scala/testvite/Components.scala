@@ -300,12 +300,23 @@ case class SearchQuery(queryVar: Var[String]) extends Component {
   )
 }
 
-case class AddPredicateLink(relationId: URI, selectedRelationComp: Option[Var[SelectedRelation]]) extends Component {
+case class AddPredicateLink(
+  predicateId: URI,
+  dbVar: Var[Database],
+  selectedRelationComp: Option[Var[SelectedRelation]]) extends Component {
+
   def body: HtmlElement = selectedRelationComp match {
     case Some(selectedRelationVar) => Button(
-      "Link"
+      _.design := ButtonDesign.Transparent,
+      _.icon := IconName.`slim-arrow-left`,
+      onClick --> { _ => {
+        selectedRelationVar.now().relationId match {
+          case Some(rId) =>  Manager.exec(dbVar)(SetPredicate(rId, predicateId))
+          case None => //todo
+        }
+      }}
     )
-    case None => div()
+    case None => div("")
   }
 }
 
@@ -314,7 +325,7 @@ case class SearchResults(
   dbVar: Var[Database],
   viewKind: ViewKind = "none",
   toThing: Option[Id] = None,
-  selectedRelationComp: Option[Var[SelectedRelation]],
+  selectedRelationComp: Option[Var[SelectedRelation]],//fix by converting to signals
 ) extends Component {
   def actions(e: Relation) =
     Button(
@@ -336,8 +347,22 @@ case class SearchResults(
           children <-- resultsSignal.map(_.map(e =>
             Table.row(
               _.cell(viewId(e.id, dbVar, hide = true)),
-              _.cell(if (viewKind == "relation") div() else viewId(e.subject, dbVar, hide = true)),
-              _.cell(viewId(e.predicate, dbVar, hide= true)),
+              _.cell(if (viewKind == "relation") div() else div(
+                display.flex,
+                flexDirection.row,
+                justifyContent.center,
+                alignItems.center,
+                AddPredicateLink(e.subject, dbVar, selectedRelationComp),
+                viewId(e.subject, dbVar, hide = true)
+              )),
+              _.cell(div(
+                display.flex,
+                flexDirection.row,
+                justifyContent.center,
+                alignItems.center,
+                AddPredicateLink(e.predicate, dbVar, selectedRelationComp),
+                viewId(e.predicate, dbVar, hide= true)
+              )),
               _.cell(
                 if (viewKind == "reference")
                   div()
@@ -347,10 +372,6 @@ case class SearchResults(
                   )
               ),
               _.cell(
-                e.`object` match {
-                  case id: URI => AddPredicateLink(id, selectedRelationComp)
-                  case id: Value => div("")
-                },
                 if (viewKind != "reference")
                   Button(
                     hidden := toThing.isEmpty,
