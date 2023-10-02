@@ -14,9 +14,11 @@ case class ViewObject(
     entity: Entity,
     db: Var[Database],
 ) extends Component {
+  val selectedRelation: Var[SelectedRelation] = Var(SelectedRelation(None))
+
   def body: HtmlElement = div(
     Title("View: ", idToString(entity.id)),
-    ViewRelations(entity, db),
+    ViewRelations(entity, db, Some(selectedRelation)),
     ViewReferences(entity.references, db),
     entity.id match {
       case id: URI      => AddRelations(db, id)
@@ -35,11 +37,12 @@ case class ViewValue(value: Value) extends Component {
 case class ViewRelations(
     entity: Entity,
     db: Var[Database],
+    selectedRelation: Option[Var[SelectedRelation]],
 ) extends Component {
   def body: HtmlElement = Panel(
     _.headerText := "Relations",
-    entity.relations.toList.map(r => ViewRelation(r, db, "relation")),
-    Add(db, Some(entity.id))
+    entity.relations.toList.map(r => ViewRelation(r, db, selectedRelation, "relation")),
+    Add(db, Some(entity.id), selectedRelation)
   )
 }
 
@@ -49,7 +52,7 @@ case class ViewReferences(
 ) extends Component {
   def body: HtmlElement = Panel(
     _.headerText := "References",
-    references.toList.map(r => ViewRelation(r, db, "reference"))
+    references.toList.map(r => ViewRelation(r, db, None, "reference"))
   )
 }
 
@@ -87,7 +90,7 @@ def viewId(id: Id, db: Var[Database], hide: Boolean = false): HtmlElement = id m
     )
 }
 
-def relationSentence(relation: Relation, dbVar: Var[Database], viewKind: ViewKind): HtmlElement = {
+def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationComp: Option[Var[SelectedRelation]], viewKind: ViewKind): HtmlElement = {
   div(
     display.flex,
     flexDirection.row,
@@ -95,6 +98,16 @@ def relationSentence(relation: Relation, dbVar: Var[Database], viewKind: ViewKin
     viewId(relation.id, dbVar, hide = true),
     if (viewKind == "relation") div() else viewId(relation.subject, dbVar, hide = true),
     viewId(relation.predicate, dbVar, hide= true),
+    selectedRelationComp match {
+      case Some(selectedRelationVar) => {
+        Button(
+          _.design := ButtonDesign.Transparent,
+          _.icon := IconName.add,
+          onClick --> { _ => selectedRelationVar.update(_.copy(relationId = Some(relation.id))) }
+        )
+      }
+      case None => div()
+    },
     if (viewKind == "reference") div() else viewId(relation.`object`, dbVar, hide = true)
   )
 }
@@ -103,13 +116,14 @@ type ViewKind = "relation" | "reference" | "none"
 case class ViewRelation(
     relation: Relation,
     db: Var[Database],
+    selectedRelation: Option[Var[SelectedRelation]],
     viewKind: ViewKind = "none"
 ) extends Component {
   def body: HtmlElement =
     div(
       display.flex,
       flexDirection.row,
-      relationSentence(relation, db, viewKind),
+      relationSentence(relation, db, selectedRelation, viewKind),
       Button(
         _.design := ButtonDesign.Transparent,
         _.icon := IconName.delete,
@@ -263,7 +277,8 @@ case class Search(query: String, db: Var[Database]) extends Component {
     SearchQuery(queryVar),
     SearchResults(
       res,
-      db)
+      db,
+      selectedRelationComp = None)
   )
 }
 
@@ -290,6 +305,7 @@ case class SearchResults(
   dbVar: Var[Database],
   viewKind: ViewKind = "none",
   toThing: Option[Id] = None,
+  selectedRelationComp: Option[Var[SelectedRelation]],
 ) extends Component {
   def actions(e: Relation) =
     Button(
@@ -350,7 +366,7 @@ case class SearchResults(
 
 //todo: remove delete
 //user adds subject from search result relations, to id predicate, by clicking on row,
-case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
+case class Add(db: Var[Database], toThing: Option[Id], selectedRelationComp: Option[Var[SelectedRelation]]) extends Component {
   var somethingVar: Var[String] = Var("")
   var canAdd: Signal[Boolean] = somethingVar.signal.map(_.nonEmpty)
   val res =
@@ -377,9 +393,11 @@ case class Add(db: Var[Database], toThing: Option[Id]) extends Component {
         disabled <-- canAdd.map(!_),
         onClick --> { _ => Manager.exec(db)(AddNewThing(somethingVar.now(), toThing))}
       ),
-      child <-- canAdd.map(can => if (can) SearchResults(res, db, "none", toThing) else div())
+      child <-- canAdd.map(can => if (can) SearchResults(res, db, "none", toThing, selectedRelationComp) else div())
     )
 }
+//when we add thing as root one, we should navigate to its subject
+//if we are on add to something, than we stay on current something
 
 def app(): HtmlElement = {
   val localData = dom.window.localStorage.getItem("db")
@@ -402,7 +420,7 @@ def app(): HtmlElement = {
         flexDirection.row,
         justifyContent.center,
         child <-- Router.router.currentPageSignal.map {
-          case MyPage.Add(to) => Add(dbVar, to)
+          case MyPage.Add(to) => Add(dbVar, to, None)
           case MyPage.HomePage =>
             div(
               Title("Relate"),

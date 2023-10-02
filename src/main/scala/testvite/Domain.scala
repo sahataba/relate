@@ -9,19 +9,7 @@ case class Relation(
     `object`: URI | Value,
     predicate: URI
 ) //split object field to two fields
-case class EditRelation(
-    id: URI,
-    subject: Option[URI],
-    `object`: Option[URI | Value],
-    predicate: Option[URI]
-) {
-  def toRelation: Option[Relation] =
-    for {
-      subject <- subject
-      `object` <- `object`
-      predicate <- predicate
-    } yield Relation(id, subject, `object`, predicate)//todo fix
-}
+
 type Relations = Set[Relation]
 type References = Set[Relation]
 case class Value(value: String)
