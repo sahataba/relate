@@ -300,6 +300,15 @@ case class SearchQuery(queryVar: Var[String]) extends Component {
   )
 }
 
+case class AddPredicateLink(relationId: URI, selectedRelationComp: Option[Var[SelectedRelation]]) extends Component {
+  def body: HtmlElement = selectedRelationComp match {
+    case Some(selectedRelationVar) => Button(
+      "Link"
+    )
+    case None => div()
+  }
+}
+
 case class SearchResults(
   resultsSignal: Signal[List[Relation]],
   dbVar: Var[Database],
@@ -338,6 +347,10 @@ case class SearchResults(
                   )
               ),
               _.cell(
+                e.`object` match {
+                  case id: URI => AddPredicateLink(id, selectedRelationComp)
+                  case id: Value => div("")
+                },
                 if (viewKind != "reference")
                   Button(
                     hidden := toThing.isEmpty,
