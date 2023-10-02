@@ -16,7 +16,29 @@ case class LinkThing(
   id: Id,
   toThing: URI,
 )
+//RefineObject
+case class SetPredicate(
+  relationId: URI,
+  predicateId: URI,
+)
 object Manager:
+  def exec(dbVar: Var[Database])(cmd: SetPredicate): Unit =
+    dbVar.update(db => {
+      db.getRelation(cmd.relationId) match {
+        case Some(relation) => {
+          val newRelation = List(
+            Relation(
+              id = URI.newId(),
+              subject = relation.subject,
+              predicate = cmd.predicateId,
+              `object` = relation.`object`,
+            )
+          )
+          db.remove(cmd.relationId).saveRelations(newRelation)
+        }
+        case None => db
+      }
+    })
   def exec(db: Var[Database])(cmd: LinkThing) =
     val newRelations =
       List(
