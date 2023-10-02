@@ -100,9 +100,11 @@ def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationC
     viewId(relation.predicate, dbVar, hide= true),
     selectedRelationComp match {
       case Some(selectedRelationVar) => {
+        val selectedColor: Signal[String] = selectedRelationVar.signal.map(s => if(s.relationId == Some(relation.id)) "red" else "black")
         Button(
           _.design := ButtonDesign.Transparent,
           _.icon := IconName.add,
+          color <-- selectedColor,
           onClick --> { _ => selectedRelationVar.update(_.copy(relationId = Some(relation.id))) }
         )
       }
