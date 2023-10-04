@@ -93,7 +93,7 @@ def viewId(id: Id, db: Var[Database], hide: Boolean = false): HtmlElement = id m
 def selectRelation(relation: Relation, selectedRelationComp: Option[Var[Option[SelectedRelation]]], position: Position): HtmlElement = {
   selectedRelationComp match {
     case Some(selectedRelationVar) => {
-      val selectedColor: Signal[String] = selectedRelationVar.signal.map(_.map(s => if(s.relationId == relation.id) "red" else "black").getOrElse("black"))
+      val selectedColor: Signal[String] = selectedRelationVar.signal.map(_.map(s => if(s.relationId == relation.id && s.position == position) "red" else "black").getOrElse("black"))
       Button(
         _.design := ButtonDesign.Transparent,
         _.icon := IconName.add,
