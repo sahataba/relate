@@ -14,7 +14,7 @@ case class ViewObject(
     entity: Entity,
     db: Var[Database],
 ) extends Component {
-  val selectedRelation: Var[SelectedRelation] = Var(SelectedRelation(None))
+  val selectedRelation: Var[Option[SelectedRelation]] = Var(None)
 
   def body: HtmlElement = div(
     Title("View: ", idToString(entity.id)),
@@ -37,7 +37,7 @@ case class ViewValue(value: Value) extends Component {
 case class ViewRelations(
     entity: Entity,
     db: Var[Database],
-    selectedRelation: Option[Var[SelectedRelation]],
+    selectedRelation: Option[Var[Option[SelectedRelation]]],
 ) extends Component {
   def body: HtmlElement = Panel(
     _.headerText := "Relations",
@@ -90,7 +90,7 @@ def viewId(id: Id, db: Var[Database], hide: Boolean = false): HtmlElement = id m
     )
 }
 
-def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationComp: Option[Var[SelectedRelation]], viewKind: ViewKind): HtmlElement = {
+def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationComp: Option[Var[Option[SelectedRelation]]], viewKind: ViewKind): HtmlElement = {
   div(
     display.flex,
     flexDirection.row,
@@ -100,12 +100,12 @@ def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationC
     viewId(relation.predicate, dbVar, hide= true),
     selectedRelationComp match {
       case Some(selectedRelationVar) => {
-        val selectedColor: Signal[String] = selectedRelationVar.signal.map(s => if(s.relationId == Some(relation.id)) "red" else "black")
+        val selectedColor: Signal[String] = selectedRelationVar.signal.map(_.map(s => if(s.relationId == relation.id) "red" else "black").getOrElse("black"))
         Button(
           _.design := ButtonDesign.Transparent,
           _.icon := IconName.add,
           color <-- selectedColor,
-          onClick --> { _ => selectedRelationVar.update(_.copy(relationId = Some(relation.id))) }
+          onClick --> { _ => selectedRelationVar.update(_ => Some(SelectedRelation(relationId = relation.id, "SetPredicate"))) }
         )
       }
       case None => div()
@@ -118,7 +118,7 @@ type ViewKind = "relation" | "reference" | "none"
 case class ViewRelation(
     relation: Relation,
     db: Var[Database],
-    selectedRelation: Option[Var[SelectedRelation]],
+    selectedRelation: Option[Var[Option[SelectedRelation]]],
     viewKind: ViewKind = "none"
 ) extends Component {
   def body: HtmlElement =
@@ -305,15 +305,15 @@ case class SearchQuery(queryVar: Var[String]) extends Component {
 case class AddPredicateLink(
   predicateId: URI,
   dbVar: Var[Database],
-  selectedRelationComp: Option[Var[SelectedRelation]]) extends Component {
+  selectedRelationComp: Option[Var[Option[SelectedRelation]]]) extends Component {
 
   def body: HtmlElement = selectedRelationComp match {
     case Some(selectedRelationVar) => Button(
       _.design := ButtonDesign.Transparent,
       _.icon := IconName.`slim-arrow-left`,
       onClick --> { _ => {
-        selectedRelationVar.now().relationId match {
-          case Some(rId) =>  Manager.exec(dbVar)(SetPredicate(rId, predicateId))
+        selectedRelationVar.now() match {
+          case Some(sr) =>  if (sr.position == "SetPredicate") Manager.exec(dbVar)(SetPredicate(sr.relationId, predicateId))
           case None => //todo
         }
       }}
@@ -327,7 +327,7 @@ case class SearchResults(
   dbVar: Var[Database],
   viewKind: ViewKind = "none",
   toThing: Option[Id] = None,
-  selectedRelationComp: Option[Var[SelectedRelation]],//fix by converting to signals
+  selectedRelationComp: Option[Var[Option[SelectedRelation]]],//fix by converting to signals
 ) extends Component {
   def actions(e: Relation) =
     Button(
@@ -402,7 +402,7 @@ case class SearchResults(
 
 //todo: remove delete
 //user adds subject from search result relations, to id predicate, by clicking on row,
-case class Add(db: Var[Database], toThing: Option[Id], selectedRelationComp: Option[Var[SelectedRelation]]) extends Component {
+case class Add(db: Var[Database], toThing: Option[Id], selectedRelationComp: Option[Var[Option[SelectedRelation]]]) extends Component {
   var somethingVar: Var[String] = Var("")
   var canAdd: Signal[Boolean] = somethingVar.signal.map(_.nonEmpty)
   val res =
@@ -427,7 +427,7 @@ case class Add(db: Var[Database], toThing: Option[Id], selectedRelationComp: Opt
       Button(
         "Add Named Thing",
         disabled <-- canAdd.map(!_),
-        onClick --> { _ => Manager.exec(db)(AddNewThing(somethingVar.now(), toThing))}
+        onClick --> { _ => Manager.exec(db)(AddNewThing(somethingVar.now(), toThing))}// add navigate
       ),
       child <-- canAdd.map(can => if (can) SearchResults(res, db, "none", toThing, selectedRelationComp) else div())
     )

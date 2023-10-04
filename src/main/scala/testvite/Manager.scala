@@ -16,8 +16,13 @@ case class LinkThing(
   id: Id,
   toThing: URI,
 )
-//RefineObject
+//DefinePredicate
 case class SetPredicate(
+  relationId: URI,
+  predicateId: URI,
+)
+//DefinePredicateAndExtractObject
+case class ExtractObjectSetPredicate(
   relationId: URI,
   predicateId: URI,
 )
@@ -35,6 +40,30 @@ object Manager:
             )
           )
           db.remove(cmd.relationId).saveRelations(newRelation)
+        }
+        case None => db
+      }
+    })
+  def exec(dbVar: Var[Database])(cmd: ExtractObjectSetPredicate): Unit =
+    dbVar.update(db => {
+      db.getRelation(cmd.relationId) match {
+        case Some(relation) => {
+          val newObjectId = URI.newId()
+          val newRelations = List(
+            Relation(
+              id = URI.newId(),
+              subject = newObjectId,
+              predicate = relation.predicate,
+              `object` = relation.`object`,
+            ),
+            Relation(
+              id = URI.newId(),//todo unstable ids. it doesnt matter
+              subject = relation.subject,
+              predicate = cmd.predicateId,
+              `object` = newObjectId,
+            )
+          )
+          db.remove(cmd.relationId).saveRelations(newRelations)
         }
         case None => db
       }

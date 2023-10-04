@@ -15,5 +15,6 @@ case class EditRelation(
 }
 
 case class SelectedRelation(
-  relationId: Option[URI],
+  relationId: URI,
+  position: "SetPredicate" | "ExtractObjectSetPredicate",
 )
