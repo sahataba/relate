@@ -90,6 +90,21 @@ def viewId(id: Id, db: Var[Database], hide: Boolean = false): HtmlElement = id m
     )
 }
 
+def selectRelation(relation: Relation, selectedRelationComp: Option[Var[Option[SelectedRelation]]], position: Position): HtmlElement = {
+  selectedRelationComp match {
+    case Some(selectedRelationVar) => {
+      val selectedColor: Signal[String] = selectedRelationVar.signal.map(_.map(s => if(s.relationId == relation.id) "red" else "black").getOrElse("black"))
+      Button(
+        _.design := ButtonDesign.Transparent,
+        _.icon := IconName.add,
+        color <-- selectedColor,
+        onClick --> { _ => selectedRelationVar.update(_ => Some(SelectedRelation(relationId = relation.id, position))) }
+      )
+    }
+    case None => div()
+  }
+}
+
 def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationComp: Option[Var[Option[SelectedRelation]]], viewKind: ViewKind): HtmlElement = {
   div(
     display.flex,
@@ -97,19 +112,9 @@ def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationC
     alignItems.center,
     viewId(relation.id, dbVar, hide = true),
     if (viewKind == "relation") div() else viewId(relation.subject, dbVar, hide = true),
+    selectRelation(relation, selectedRelationComp, "ExtractObjectSetPredicate"),
     viewId(relation.predicate, dbVar, hide= true),
-    selectedRelationComp match {
-      case Some(selectedRelationVar) => {
-        val selectedColor: Signal[String] = selectedRelationVar.signal.map(_.map(s => if(s.relationId == relation.id) "red" else "black").getOrElse("black"))
-        Button(
-          _.design := ButtonDesign.Transparent,
-          _.icon := IconName.add,
-          color <-- selectedColor,
-          onClick --> { _ => selectedRelationVar.update(_ => Some(SelectedRelation(relationId = relation.id, "SetPredicate"))) }
-        )
-      }
-      case None => div()
-    },
+    selectRelation(relation, selectedRelationComp, "SetPredicate"),
     if (viewKind == "reference") div() else viewId(relation.`object`, dbVar, hide = true)
   )
 }
@@ -313,7 +318,10 @@ case class AddPredicateLink(
       _.icon := IconName.`slim-arrow-left`,
       onClick --> { _ => {
         selectedRelationVar.now() match {
-          case Some(sr) =>  if (sr.position == "SetPredicate") Manager.exec(dbVar)(SetPredicate(sr.relationId, predicateId))
+          case Some(sr) =>  sr.position match {
+            case "SetPredicate" => Manager.exec(dbVar)(SetPredicate(sr.relationId, predicateId))
+            case "ExtractObjectSetPredicate" => Manager.exec(dbVar)(ExtractObjectSetPredicate(sr.relationId, predicateId))
+          }
           case None => //todo
         }
       }}

@@ -14,7 +14,9 @@ case class EditRelation(
     } yield Relation(id, subject, `object`, predicate)//todo fix
 }
 
+type Position = "SetPredicate" | "ExtractObjectSetPredicate"
+
 case class SelectedRelation(
   relationId: URI,
-  position: "SetPredicate" | "ExtractObjectSetPredicate",
+  position: Position,
 )
