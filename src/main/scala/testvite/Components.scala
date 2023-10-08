@@ -73,6 +73,7 @@ def getName(id: Id, db: Var[Database]): String = {
 //think of combining add and search page
 //predicate order: name
 //one level depth
+//if there is no name, and there is only 1 predicate then expand with it, and if theres more than also add "more" sign
 def viewId(id: Id, db: Var[Database], hide: Boolean = false): HtmlElement = id match {
   case id: Value =>
     Link(
@@ -118,6 +119,8 @@ def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationC
     if (viewKind == "reference") div() else viewId(relation.`object`, dbVar, hide = true)
   )
 }
+
+//inline editing of first level objects
 
 type ViewKind = "relation" | "reference" | "none"
 case class ViewRelation(
@@ -330,6 +333,31 @@ case class AddPredicateLink(
   }
 }
 
+case class SimpleAdd(
+  toThing: Option[Id] = None,
+  dbVar: Var[Database],
+  e: Relation,
+  id: URI,
+) extends Component {
+  def body: HtmlElement =
+    Button(
+      hidden := toThing.isEmpty,
+      _.design := ButtonDesign.Transparent,
+      _.icon := IconName.add,
+      onClick --> { _ =>
+        toThing match {
+          case Some(to) => {
+            to match {
+              case to: URI => Manager.exec(dbVar)(LinkThing(id, to))//add this to other positions
+              case to: Value =>
+            }
+          }
+          case None => 
+        }
+      }
+    )
+}
+
 case class SearchResults(
   resultsSignal: Signal[List[Relation]],
   dbVar: Var[Database],
@@ -363,7 +391,8 @@ case class SearchResults(
                 justifyContent.center,
                 alignItems.center,
                 AddPredicateLink(e.subject, dbVar, selectedRelationComp),
-                viewId(e.subject, dbVar, hide = true)
+                viewId(e.subject, dbVar, hide = true),
+                SimpleAdd(toThing, dbVar, e, e.subject),
               )),
               _.cell(div(
                 display.flex,
@@ -371,7 +400,8 @@ case class SearchResults(
                 justifyContent.center,
                 alignItems.center,
                 AddPredicateLink(e.predicate, dbVar, selectedRelationComp),
-                viewId(e.predicate, dbVar, hide= true)
+                viewId(e.predicate, dbVar, hide= true),
+                SimpleAdd(toThing, dbVar, e, e.predicate),
               )),
               _.cell(
                 if (viewKind == "reference")
@@ -383,22 +413,10 @@ case class SearchResults(
               ),
               _.cell(
                 if (viewKind != "reference")
-                  Button(
-                    hidden := toThing.isEmpty,
-                    _.design := ButtonDesign.Transparent,
-                    _.icon := IconName.add,
-                    onClick --> { _ =>
-                      toThing match {
-                        case Some(to) => {
-                          to match {
-                            case to: URI => Manager.exec(dbVar)(LinkThing(e.`object`, to))
-                            case to: Value =>
-                          }
-                        }
-                        case None => 
-                      }
-                    }
-                  )
+                  e.`object` match {
+                    case id: URI => SimpleAdd(toThing, dbVar, e, id)
+                    case v: Value => div()
+                  }
                 else
                   div()
               ),
