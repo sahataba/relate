@@ -13,8 +13,8 @@ case class EditRelation(
       predicate <- predicate
     } yield Relation(id, subject, `object`, predicate)//todo fix
 }
-
-type Position = "SetPredicate" | "ExtractObjectSetPredicate"
+//todo: hide invalid positions
+type Position = "SetPredicate" | "ExtractObjectSetPredicate" | "ExtractObjectToObjectWithNewPredicate" | "MoveObjectToPredicateAndSetObject"
 
 case class SelectedRelation(
   relationId: URI,

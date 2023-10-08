@@ -30,6 +30,10 @@ case class ExtractObjectToObjectWithNewPredicate(
   relationId: URI,
   predicateId: URI,
 )
+case class MoveObjectToPredicateAndSetObject(
+  relationId: URI,
+  predicateId: URI,
+)
 object Manager:
   def exec(dbVar: Var[Database])(cmd: SetPredicate): Unit =
     dbVar.update(db => {
@@ -91,6 +95,24 @@ object Manager:
               `object` = newObjectId,
             )
           )
+          db.remove(cmd.relationId).saveRelations(newRelations)
+        }
+        case None => db
+      }
+    })
+  def exec(dbVar: Var[Database])(cmd: MoveObjectToPredicateAndSetObject): Unit =
+    dbVar.update(db => {
+      db.getRelation(cmd.relationId) match {
+        case Some(relation) => {
+          val newRelations = List(
+            Relation(
+              id = URI.newId(),
+              subject = relation.subject,
+              predicate = relation.`object`.asInstanceOf[URI],
+              `object` = cmd.predicateId,
+            ),
+          )
+            
           db.remove(cmd.relationId).saveRelations(newRelations)
         }
         case None => db

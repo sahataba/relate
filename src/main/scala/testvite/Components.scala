@@ -116,7 +116,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationC
     if(relation.predicate != Predicate.blank) selectRelation(relation, selectedRelationComp, "ExtractObjectSetPredicate") else div(),
     viewId(relation.predicate, dbVar, hide= true),
     selectRelation(relation, selectedRelationComp, if(relation.predicate == Predicate.blank) "SetPredicate" else "ExtractObjectToObjectWithNewPredicate"),
-    if (viewKind == "reference") div() else viewId(relation.`object`, dbVar, hide = true)
+    if (viewKind == "reference") div() else div(viewId(relation.`object`, dbVar, hide = true), if (relation.predicate != Predicate.blank || relation.`object`.isInstanceOf[Value]) div() else selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")),
   )
 }
 
@@ -325,6 +325,7 @@ case class AddPredicateLink(
             case "SetPredicate" => Manager.exec(dbVar)(SetPredicate(sr.relationId, predicateId))
             case "ExtractObjectSetPredicate" => Manager.exec(dbVar)(ExtractObjectSetPredicate(sr.relationId, predicateId))
             case "ExtractObjectToObjectWithNewPredicate" => Manager.exec(dbVar)(ExtractObjectToObjectWithNewPredicate(sr.relationId, predicateId))
+            case "MoveObjectToPredicateAndSetObject" => Manager.exec(dbVar)(MoveObjectToPredicateAndSetObject(sr.relationId, predicateId))
           }
           case None => //todo
         }
