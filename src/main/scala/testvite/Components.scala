@@ -75,19 +75,19 @@ def getName(id: Id, db: Var[Database]): String = {
 //predicate order: name
 //one level depth
 //if there is no name, and there is only 1 predicate then expand with it, and if theres more than also add "more" sign
-def viewId(id: Id, db: Var[Database], hide: Boolean = false): HtmlElement = id match {
+def viewId(id: Id, db: Var[Database]): HtmlElement = id match {
   case id: Value =>
     Link(
       marginLeft("1em"),
       //aLink,
-      if (hide) getName(id, db) else id.value,
+      getName(id, db),
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
   case id: URI =>
     Link(
       marginLeft("1em"),
       //aLink,
-      if (hide) s"${getName(id, db)}" else id.value,
+      s"${getName(id, db)}",
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
 }
@@ -110,12 +110,12 @@ def selectRelation(relation: Relation, selectedRelationComp: Option[Var[Option[S
 def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationComp: Option[Var[Option[SelectedRelation]]], viewKind: ViewKind): HtmlElement = {
   div(
     simpleInline,
-    viewId(relation.id, dbVar, hide = true),
-    if (viewKind == "relation") div() else viewId(relation.subject, dbVar, hide = true),
+    viewId(relation.id, dbVar),
+    if (viewKind == "relation") div() else viewId(relation.subject, dbVar),
     if(relation.predicate != Predicate.blank) selectRelation(relation, selectedRelationComp, "ExtractObjectSetPredicate") else div(),
-    viewId(relation.predicate, dbVar, hide= true),
+    viewId(relation.predicate, dbVar),
     selectRelation(relation, selectedRelationComp, if(relation.predicate == Predicate.blank) "SetPredicate" else "ExtractObjectToObjectWithNewPredicate"),
-    if (viewKind == "reference") div() else div(viewId(relation.`object`, dbVar, hide = true), if (relation.predicate != Predicate.blank || relation.`object`.isInstanceOf[Value]) div() else selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")),
+    if (viewKind == "reference") div() else div(viewId(relation.`object`, dbVar), if (relation.predicate != Predicate.blank || relation.`object`.isInstanceOf[Value]) div() else selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")),
   )
 }
 
@@ -382,19 +382,19 @@ case class SearchResults(
         _.slots.columns := Table.column(Label("")),
           children <-- resultsSignal.map(_.map(e =>
             Table.row(
-              _.cell(viewId(e.id, dbVar, hide = true)),
+              _.cell(viewId(e.id, dbVar)),
               _.cell(if (viewKind == "relation") div() else div(
                 simpleInline,
                 justifyContent.center,
                 AddPredicateLink(e.subject, dbVar, selectedRelationComp),
-                viewId(e.subject, dbVar, hide = true),
+                viewId(e.subject, dbVar),
                 SimpleAdd(toThing, dbVar, e, e.subject),
               )),
               _.cell(div(
                 simpleInline,
                 justifyContent.center,
                 AddPredicateLink(e.predicate, dbVar, selectedRelationComp),
-                viewId(e.predicate, dbVar, hide= true),
+                viewId(e.predicate, dbVar),
                 SimpleAdd(toThing, dbVar, e, e.predicate),
               )),
               _.cell(
@@ -402,7 +402,7 @@ case class SearchResults(
                   div()
                 else
                   div(
-                    viewId(e.`object`, dbVar, hide = true),
+                    viewId(e.`object`, dbVar),
                   )
               ),
               _.cell(
