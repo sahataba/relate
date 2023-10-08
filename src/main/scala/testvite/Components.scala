@@ -108,9 +108,7 @@ def selectRelation(relation: Relation, selectedRelationComp: Option[Var[Option[S
 
 def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationComp: Option[Var[Option[SelectedRelation]]], viewKind: ViewKind): HtmlElement = {
   div(
-    display.flex,
-    flexDirection.row,
-    alignItems.center,
+    simpleInline,
     viewId(relation.id, dbVar, hide = true),
     if (viewKind == "relation") div() else viewId(relation.subject, dbVar, hide = true),
     if(relation.predicate != Predicate.blank) selectRelation(relation, selectedRelationComp, "ExtractObjectSetPredicate") else div(),
@@ -131,8 +129,7 @@ case class ViewRelation(
 ) extends Component {
   def body: HtmlElement =
     div(
-      display.flex,
-      flexDirection.row,
+      simpleInline,
       relationSentence(relation, db, selectedRelation, viewKind),
       Button(
         _.design := ButtonDesign.Transparent,
@@ -161,8 +158,7 @@ case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
   def body: HtmlElement = Panel(
     _.headerText := "New Relations",
     div(
-      display.flex,
-      flexDirection.row,
+      simpleInline,
       child <-- relationsVar.signal.map(relations =>
         div(relations.map(r => AddRelation(dbVar, r, newRelation)))
       )
@@ -297,8 +293,7 @@ case class SearchQuery(queryVar: Var[String]) extends Component {
     _.headerText := "Query",
     div(
       marginTop("1em"),
-      display.flex,
-      flexDirection.row,
+      simpleInline,
       input(
         autoFocus(true),
         marginLeft("0.5em"),
@@ -388,19 +383,15 @@ case class SearchResults(
             Table.row(
               _.cell(viewId(e.id, dbVar, hide = true)),
               _.cell(if (viewKind == "relation") div() else div(
-                display.flex,
-                flexDirection.row,
+                simpleInline,
                 justifyContent.center,
-                alignItems.center,
                 AddPredicateLink(e.subject, dbVar, selectedRelationComp),
                 viewId(e.subject, dbVar, hide = true),
                 SimpleAdd(toThing, dbVar, e, e.subject),
               )),
               _.cell(div(
-                display.flex,
-                flexDirection.row,
+                simpleInline,
                 justifyContent.center,
-                alignItems.center,
                 AddPredicateLink(e.predicate, dbVar, selectedRelationComp),
                 viewId(e.predicate, dbVar, hide= true),
                 SimpleAdd(toThing, dbVar, e, e.predicate),
@@ -480,8 +471,7 @@ def app(): HtmlElement = {
       span(child <-- o), // todo
       div(
         marginLeft("2em"),
-        display.flex,
-        flexDirection.row,
+        simpleInline,
         justifyContent.center,
         child <-- Router.router.currentPageSignal.map {
           case MyPage.Add(to) => Add(dbVar, to, None)

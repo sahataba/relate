@@ -15,3 +15,10 @@ val aLink = List(
   textDecoration := "underline",
   cursor := "pointer",
 )
+
+val simpleInline =
+  List(
+    display.flex,
+    flexDirection.row,
+    alignItems.center,
+  )
