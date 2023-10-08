@@ -63,8 +63,9 @@ def toS(id: Id): String = id match {
 
 def getName(id: Id, db: Var[Database]): String = {
   val e = db.now().get(id)
-  e.relations
-    .find(_.predicate == Predicate.name)
+  val namePredicate = e.relations.find(_.predicate == Predicate.name)
+  val foundPredicate = namePredicate.orElse(e.references.headOption)
+  foundPredicate
     .map(a => toS(a.`object`))
     .getOrElse(toS(id))
 }
