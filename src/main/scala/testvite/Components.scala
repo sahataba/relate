@@ -370,6 +370,7 @@ case class SearchResults(
       onClick --> { _ => dbVar.update(_.remove(e.id)) }
     )
 
+  val inSelection = selectedRelationComp.map(_.now().isDefined).getOrElse(false)
   def body: HtmlElement =
     Panel(
       _.headerText := "Results",
@@ -386,14 +387,14 @@ case class SearchResults(
               _.cell(if (viewKind == "relation") div() else div(
                 simpleInline,
                 justifyContent.center,
-                AddPredicateLink(e.subject, dbVar, selectedRelationComp),
+                if(inSelection) AddPredicateLink(e.subject, dbVar, selectedRelationComp) else div(),
                 viewId(e.subject, dbVar),
                 SimpleAdd(toThing, dbVar, e, e.subject),
               )),
               _.cell(div(
                 simpleInline,
                 justifyContent.center,
-                AddPredicateLink(e.predicate, dbVar, selectedRelationComp),
+                if(inSelection) AddPredicateLink(e.predicate, dbVar, selectedRelationComp) else div(),
                 viewId(e.predicate, dbVar),
                 SimpleAdd(toThing, dbVar, e, e.predicate),
               )),
