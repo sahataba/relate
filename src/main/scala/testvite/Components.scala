@@ -458,7 +458,7 @@ case class Add(db: Var[Database], toThing: Option[Id], selectedRelationComp: Opt
 def app(): HtmlElement = {
   val localData = dom.window.localStorage.getItem("db")
   val initialData = if (localData == null) data else localData
-  val initial = initialData.fromJson[Database].getOrElse(Database.empty)
+  val initial = initialData.fromJson[Database].getOrElse(Database.initial)
   val dbVar = Var(initial)
   val o = dbVar.signal
     .map(db => {

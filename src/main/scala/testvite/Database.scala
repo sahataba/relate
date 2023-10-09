@@ -27,7 +27,16 @@ case class Database(private val relations: Set[Relation]):
   def remove(id: URI): Database = this.copy(relations = relations.filter(r => r.id != id))
 
 object Database:
-  val empty = Database(Set.empty)
+  val systemRelations =
+    Set(
+      Relation(
+        id = URI("system-name"),
+        `subject` = URI("name"),
+        `object` = Value("name"),
+        predicate = URI("name"),
+      ),
+    )
+  val initial = Database(systemRelations)
   given JsonDecoder[URI | Value] = JsonDecoder[String].map(stringToId)
   given JsonEncoder[URI | Value] = JsonEncoder[String].contramap(idToString)
   given JsonFieldDecoder[URI | Value] = JsonFieldDecoder[String].map(stringToId)

@@ -21,9 +21,9 @@ val data =
   "relations": [
     {
       "id": "r-17838d50-57a4-11ee-8c99-0242ac120002",
-      "subject": "r-10",
-      "object": "r-9",
-      "predicate": "r-33"
+      "subject": "r-name",
+      "object": "v-name",
+      "predicate": "r-name"
     }
   ]
 }
