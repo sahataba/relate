@@ -11,6 +11,9 @@ import be.doeraene.webcomponents.ui5.*
 import be.doeraene.webcomponents.ui5.configkeys.{ButtonDesign, IconName}
 import com.raquo.airstream.core.Signal
 
+val selectionIcon = IconName.`slim-arrow-left`
+val addingIcon = IconName.add
+
 case class ViewObject(
     entity: Entity,
     db: Var[Database],
@@ -99,7 +102,7 @@ def selectRelation(relation: Relation, selectedRelationComp: Option[Var[Option[S
       val selectedColor: Signal[String] = selectedRelationVar.signal.map(_.map(s => if(s.relationId == relation.id && s.position == position) "red" else "black").getOrElse("black"))
       Button(
         _.design := ButtonDesign.Transparent,
-        _.icon := IconName.add,
+        _.icon := selectionIcon,
         color <-- selectedColor,
         onClick --> { _ => selectedRelationVar.update(_ => Some(SelectedRelation(relationId = relation.id, position))) }
       )
@@ -315,7 +318,7 @@ case class AddPredicateLink(
   def body: HtmlElement = selectedRelationComp match {
     case Some(selectedRelationVar) => Button(
       _.design := ButtonDesign.Transparent,
-      _.icon := IconName.`slim-arrow-left`,
+      _.icon := selectionIcon,
       onClick --> { _ => {
         selectedRelationVar.now() match {
           case Some(sr) =>  sr.position match {
@@ -342,7 +345,7 @@ case class SimpleAdd(
     Button(
       hidden := toThing.isEmpty,
       _.design := ButtonDesign.Transparent,
-      _.icon := IconName.add,
+      _.icon := addingIcon,
       onClick --> { _ =>
         toThing match {
           case Some(to) => {
