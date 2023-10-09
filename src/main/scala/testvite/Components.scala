@@ -119,7 +119,7 @@ def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationC
     if(relation.predicate != Predicate.blank) selectRelation(relation, selectedRelationComp, "ExtractObjectSetPredicate") else div(),
     viewId(relation.predicate, dbVar),
     selectRelation(relation, selectedRelationComp, if(relation.predicate == Predicate.blank) "SetPredicate" else "ExtractObjectToObjectWithNewPredicate"),
-    if (viewKind == "reference") div() else div(viewId(relation.`object`, dbVar), if (relation.predicate != Predicate.blank || relation.`object`.isInstanceOf[Value]) div() else selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")),
+    if (viewKind == "reference") div() else div(simpleInline, viewId(relation.`object`, dbVar), if (relation.predicate != Predicate.blank || relation.`object`.isInstanceOf[Value]) div() else selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")),
   )
 }
 
