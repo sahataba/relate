@@ -9,6 +9,7 @@ import org.scalajs.dom
 import Page as MyPage
 import be.doeraene.webcomponents.ui5.*
 import be.doeraene.webcomponents.ui5.configkeys.{ButtonDesign, IconName}
+import com.raquo.airstream.core.Signal
 
 case class ViewObject(
     entity: Entity,
@@ -370,7 +371,7 @@ case class SearchResults(
       onClick --> { _ => dbVar.update(_.remove(e.id)) }
     )
 
-  val inSelection = selectedRelationComp.map(_.now().isDefined).getOrElse(false)
+  val inSelection = selectedRelationComp.map(_.signal.map(_.isDefined)).getOrElse(Signal.fromValue(false))
   def body: HtmlElement =
     Panel(
       _.headerText := "Results",
@@ -388,13 +389,13 @@ case class SearchResults(
                 simpleInline,
                 justifyContent.center,
                 viewId(e.subject, dbVar),
-                if(inSelection) AddPredicateLink(e.subject, dbVar, selectedRelationComp) else SimpleAdd(toThing, dbVar, e, e.subject),
+                child <-- inSelection.map(inSelection => if(inSelection) AddPredicateLink(e.subject, dbVar, selectedRelationComp) else SimpleAdd(toThing, dbVar, e, e.subject)),
               )),
               _.cell(div(
                 simpleInline,
                 justifyContent.center,
                 viewId(e.predicate, dbVar),
-                if(inSelection) AddPredicateLink(e.predicate, dbVar, selectedRelationComp) else SimpleAdd(toThing, dbVar, e, e.predicate),
+                child <-- inSelection.map(inSelection => if(inSelection) AddPredicateLink(e.predicate, dbVar, selectedRelationComp) else SimpleAdd(toThing, dbVar, e, e.predicate)),
               )),
               _.cell(
                 if (viewKind == "reference")
