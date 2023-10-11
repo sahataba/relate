@@ -60,6 +60,7 @@ case class ViewReferences(
   )
 }
 
+//if we are showing an id of object with only one relation, "not a name", than we display inner structure in "ID" view
 def toS(id: Id): String = id match {
   case id: URI   => "ID"
   case id: Value => id.value
@@ -79,6 +80,13 @@ def getName(id: Id, db: Var[Database]): String = {
 //predicate order: name
 //one level depth
 //if there is no name, and there is only 1 predicate then expand with it, and if theres more than also add "more" sign
+//expand = nested object
+//execute = function
+//elaborate = moving an object to predicate and setting object
+//define = setting predicate
+//contraints: we cant elaborate on nested object
+//we cant elaborate on functions
+
 def viewId(id: Id, db: Var[Database]): HtmlElement = id match {
   case id: Value =>
     Link(
@@ -445,12 +453,26 @@ case class Add(db: Var[Database], toThing: Option[Id], selectedRelationComp: Opt
       Button(
         "Add Value",
         disabled <-- canAdd.map(!_),
-        onClick --> { _ => Manager.exec(db)(AddValue(somethingVar.now(), toThing))}
+        onClick --> { _ => {
+          val someRelationId =
+            selectedRelationComp.flatMap(_.now().map(_.relationId))//todo add position check
+          someRelationId match {
+            case Some(relationId) => Manager.exec(db)(MoveObjectToPredicateAndSetNewThing(relationId, somethingVar.now(), "value"))
+            case None => Manager.exec(db)(AddNewValue(somethingVar.now(), toThing))
+          }        
+        }}
       ),
       Button(
         "Add Named Thing",
-        disabled <-- canAdd.map(!_),
-        onClick --> { _ => Manager.exec(db)(AddNewThing(somethingVar.now(), toThing))}// add navigate
+        disabled <-- canAdd.map(!_), //make both add value and add name thing to respect selectedrelation and expand position setting
+        onClick --> { _ => {
+          val someRelationId =
+            selectedRelationComp.flatMap(_.now().map(_.relationId))//todo add position check
+          someRelationId match {
+            case Some(relationId) => Manager.exec(db)(MoveObjectToPredicateAndSetNewThing(relationId, somethingVar.now(), "object"))
+            case None => Manager.exec(db)(AddNewThing(somethingVar.now(), toThing))
+          }
+        }}
       ),
       child <-- canAdd.map(can => if (can) SearchResults(res, db, "none", toThing, selectedRelationComp) else div())
     )

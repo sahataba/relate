@@ -7,7 +7,7 @@ case class AddNewThing(
   something: String,
   toThing: Option[Id | Value]
 )
-case class AddValue(
+case class AddNewValue(
   something: String,
   toThing: Option[Id]
 )
@@ -33,6 +33,11 @@ case class ExtractObjectToObjectWithNewPredicate(
 case class MoveObjectToPredicateAndSetObject(
   relationId: URI,
   predicateId: URI,
+)
+case class MoveObjectToPredicateAndSetNewThing(
+  relationId: URI,
+  something: String,
+  kind: "value" | "object",
 )
 object Manager:
   def exec(dbVar: Var[Database])(cmd: SetPredicate): Unit =
@@ -118,6 +123,45 @@ object Manager:
         case None => db
       }
     })
+  def exec(dbVar: Var[Database])(cmd: MoveObjectToPredicateAndSetNewThing): Unit =
+    dbVar.update(db => {
+      db.getRelation(cmd.relationId) match {
+        case Some(relation) => {
+          val newRelations =
+            cmd.kind match {
+            case "value" => {
+              List(
+                Relation(
+                  id = URI.newId(),
+                  subject = relation.subject,
+                  predicate = relation.`object`.asInstanceOf[URI],
+                  `object` = Value(cmd.something),
+                )
+              )
+            }
+            case "object" => {
+              val newtThingId = URI.newId()
+              List(
+                Relation(
+                  id = URI.newId(),
+                  subject = newtThingId,
+                  `object` = Value(cmd.something),
+                  predicate = Predicate.name
+                ),
+                Relation(
+                  id = URI.newId(),
+                  subject = relation.subject,
+                  predicate = relation.`object`.asInstanceOf[URI],
+                  `object` = newtThingId,
+                )
+              )
+            }
+          }
+          db.remove(cmd.relationId).saveRelations(newRelations)
+        }
+        case None => db
+      }
+    })
   def exec(db: Var[Database])(cmd: LinkThing) =
     val newRelations =
       List(
@@ -149,7 +193,7 @@ object Manager:
         case t: Value => ???
       }).toList
     db.update(_.saveRelations(newRelations))
-  def exec(db: Var[Database])(cmd: AddValue) = 
+  def exec(db: Var[Database])(cmd: AddNewValue) = 
     val thingId = cmd.toThing match {
       case Some(URI(uri)) => URI(uri)
       case Some(Value(_)) => ???
