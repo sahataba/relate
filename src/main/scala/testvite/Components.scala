@@ -140,18 +140,6 @@ case class ViewRelation(
       )
     )
 }
-
-//reuse viewId here
-def selOption(p : URI | Value) =
-  p match {
-    case URI(v) => Input.suggestion(
-      _.text := v
-    )
-    case Value(v) => Input.suggestion(
-      _.text := v
-    )
-  }
-
 case class Search(query: String, db: Var[Database]) extends Component {
   val queryVar: Var[String] = Var(query)
   val res =
