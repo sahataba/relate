@@ -4,16 +4,6 @@ import scala.scalajs.js
 import com.raquo.laminar.api.L._
 import typings.d3.mod as d3Mod
 import typings.d3Hierarchy as d3Hierarchy
-import typings.d3.global.d3 as d3
-import typings.std.{
-  CanvasRenderingContext2D,
-  FrameRequestCallback,
-  HTMLCanvasElement,
-  stdStrings
-}
-import scala.scalajs.js.annotation.JSExport
-import scala.scalajs.js.annotation.JSExportAll
-import scala.scalajs.js.annotation.JSExportTopLevel
 import upickle.default.{ReadWriter => RW, macroRW}
 import upickle.default._
 
