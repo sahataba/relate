@@ -24,10 +24,6 @@ case class ViewObject(
     Title("View: ", idToString(entity.id)),
     ViewRelations(entity, db, Some(selectedRelation)),
     ViewReferences(entity.references, db),
-    entity.id match {
-      case id: URI      => AddRelations(db, id)
-      case value: Value => div("todo")
-    }
   )
 }
 
@@ -145,33 +141,6 @@ case class ViewRelation(
     )
 }
 
-case class AddRelations(dbVar: Var[Database], from: URI) extends Component {
-  val db = dbVar.now()
-  val relationsVar = Var(
-    List(EditRelation(id = URI.newId(), subject = None, predicate = None, `object` = None))
-  )
-
-  def newRelation(): Unit = {
-    relationsVar.update(relations => {
-      relations :+ EditRelation(
-        id = URI.newId(),
-        subject = None,
-        predicate = None,
-        `object` = None
-      )
-    })
-  }
-  def body: HtmlElement = Panel(
-    _.headerText := "New Relations",
-    div(
-      simpleInline,
-      child <-- relationsVar.signal.map(relations =>
-        div(relations.map(r => AddRelation(dbVar, r, newRelation)))
-      )
-    )
-  )
-}
-
 //reuse viewId here
 def selOption(p : URI | Value) =
   p match {
@@ -182,101 +151,6 @@ def selOption(p : URI | Value) =
       _.text := v
     )
   }
-
-case class AddRelation(
-    dbVar: Var[Database],
-    relation: EditRelation,
-    newRelation: () => Unit
-) extends Component {
-  val relationVar = Var(relation)
-  val db = dbVar.now()
-  val allIds =
-    db.getRelations().map(r => List(r.subject, r.`object`, r.predicate)).flatten
-  val allOptions =
-    allIds.map(id => option(value := idToString(id), idToString(id)))
-  val allPredicates = db.getRelations().map(_.predicate).distinct
-  val allSubjects = db.getRelations().map(_.subject).distinct
-
-  def body: HtmlElement = div(
-    display.flex,
-    flexDirection.row,
-    Input(
-      //_.readonly := true,
-      _.placeholder := "Subject",
-      _.showClearIcon := true,
-      _.showSuggestions := true,
-      value <-- relationVar.signal.map(_.subject.map(_.value).getOrElse("")),
-      onInput.mapToValue --> { value =>
-        relationVar.update(
-          _.copy(subject =
-            if (value.isEmpty()) None else Some(URI(value))
-          )
-        )
-      },
-       allIds.map(selOption)
-    ),
-    Input(
-      _.placeholder := "Predicate",
-      _.showClearIcon := true,
-      _.showSuggestions := true,
-      value <-- relationVar.signal.map(
-        _.predicate.map(_.value).getOrElse("")
-      ),
-      onInput.mapToValue --> { value =>
-        relationVar.update(
-          _.copy(predicate =
-            if (value.isEmpty()) None else Some(URI(value))
-          )
-        )
-      },
-      allIds.map(selOption)
-    ),
-    div(
-      display.flex,
-      flexDirection.column,
-      Input(
-        _.placeholder := "Object",
-        _.showClearIcon := true,
-        value <-- relationVar.signal.map(value => {
-          value.`object` match {
-            case Some(Value(v)) => v
-            case Some(URI(v))    => ""
-            case None => ""
-          }
-
-        }
-        ),
-        onInput.mapToValue --> { value =>
-          relationVar.update(
-            _.copy(`object` =
-              if (value.isEmpty()) None else Some(Value(value))
-            )
-          )
-        }
-      ),
-      select(
-        value <-- relationVar.signal.map(
-          _.`object`.map(idToString).getOrElse("")
-        ),
-        allOptions,
-        onChange.mapToValue --> { value =>
-          relationVar.update(
-            _.copy(`object` =
-              if (value.isEmpty()) None else Some(stringToId(value))
-            )
-          )
-        },
-      )
-    ),
-    Button(
-      "Add",
-      onClick --> { _ => {
-        val r = relationVar.now()
-        dbVar.update(_.saveRelations(List(r.toRelation.get)))
-      }}
-    )
-  )
-}
 
 case class Search(query: String, db: Var[Database]) extends Component {
   val queryVar: Var[String] = Var(query)
