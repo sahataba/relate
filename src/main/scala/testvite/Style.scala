@@ -8,17 +8,17 @@ val roundedBorder = List(
   border := s"1px solid ${blue}",
   borderRadius := "1em",
   paddingLeft := "1em",
-  paddingRight := "1em",
+  paddingRight := "1em"
 )
 
 val aLink = List(
   textDecoration := "underline",
-  cursor := "pointer",
+  cursor := "pointer"
 )
 
 val simpleInline =
   List(
     display.flex,
     flexDirection.row,
-    alignItems.center,
+    alignItems.center
   )

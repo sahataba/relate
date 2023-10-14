@@ -24,7 +24,8 @@ case class Database(private val relations: Set[Relation]):
   def getRelation(id: URI) = relations.find(r => r.id == id)
   def saveRelations(newRelations: List[Relation]): Database =
     this.copy(relations = relations.concat(newRelations))
-  def remove(id: URI): Database = this.copy(relations = relations.filter(r => r.id != id))
+  def remove(id: URI): Database =
+    this.copy(relations = relations.filter(r => r.id != id))
 
 object Database:
   val systemRelations =
@@ -33,8 +34,8 @@ object Database:
         id = URI("system-name"),
         `subject` = URI("name"),
         `object` = Value("name"),
-        predicate = URI("name"),
-      ),
+        predicate = URI("name")
+      )
     )
   val initial = Database(systemRelations)
   given JsonDecoder[URI | Value] = JsonDecoder[String].map(stringToId)

@@ -23,7 +23,7 @@ object Router:
   val homeRoute: Route[Page.HomePage.type, Unit] =
     Route.static(HomePage, root / endOfSegments)
 
-  //val addRoute: Route[Page.Add.type, Unit] =
+  // val addRoute: Route[Page.Add.type, Unit] =
   //  Route.static(Add, root / endOfSegments)
 
   val addRoute = Route[Add, String](
@@ -59,9 +59,8 @@ object Router:
       _.toString, // mock page title (displayed in the browser tab next to favicon)
     serializePage =
       page => page.toJson, // serialize page data for storage in History API log
-    deserializePage =
-      pageStr =>
-        pageStr.fromJson[Page].getOrElse(HomePage) // deserialize the above
+    deserializePage = pageStr =>
+      pageStr.fromJson[Page].getOrElse(HomePage) // deserialize the above
   )(
     popStateEvents = L.windowEvents(
       _.onPopState

@@ -7,7 +7,7 @@ case class Relation(
     id: URI,
     subject: URI,
     `object`: URI | Value,
-    predicate: URI //finally add option to predicate, check rdf spec
+    predicate: URI // finally add option to predicate, check rdf spec
 ) //split object field to two fields
 
 type Relations = Set[Relation]
