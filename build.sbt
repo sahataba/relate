@@ -14,7 +14,7 @@ lazy val `test-vite` = project
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
-        .withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("testvite")))
+        .withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("relate")))
     },
 
     externalNpm := {

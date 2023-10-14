@@ -1,4 +1,4 @@
-package testvite
+package relate
 import zio.json._
 
 case class Database(private val relations: Set[Relation]):

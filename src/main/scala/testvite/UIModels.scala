@@ -1,4 +1,4 @@
-package testvite
+package relate
 
 case class EditRelation(
     id: URI,

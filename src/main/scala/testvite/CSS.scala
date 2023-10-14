@@ -1,4 +1,4 @@
-package testvite
+package relate
 
 import scalacss.DevDefaults._
 

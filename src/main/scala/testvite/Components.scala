@@ -1,4 +1,4 @@
-package testvite
+package relate
 
 import com.raquo.laminar.api.L.{*}
 import Page as MyPage

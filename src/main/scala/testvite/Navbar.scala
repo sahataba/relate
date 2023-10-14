@@ -1,7 +1,7 @@
-package testvite
+package relate
 
 import com.raquo.laminar.api.L._
-import testvite.Page._
+import relate.Page._
 
 final case class NavBar() extends Component {
 

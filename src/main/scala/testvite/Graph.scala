@@ -1,4 +1,4 @@
-package testvite
+package relate
 
 import scala.scalajs.js
 import com.raquo.laminar.api.L._

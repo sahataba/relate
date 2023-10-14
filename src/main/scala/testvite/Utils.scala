@@ -1,4 +1,4 @@
-package testvite
+package relate
 
 def idToString(id: Id): String = id match {
   case id: URI   => s"r-${id.value}"

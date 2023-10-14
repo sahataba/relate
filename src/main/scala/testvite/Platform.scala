@@ -1,4 +1,4 @@
-package testvite
+package relate
 
 //list all platform functions
 val platformFunctions = List(
