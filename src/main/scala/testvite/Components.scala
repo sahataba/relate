@@ -31,13 +31,6 @@ case class ViewObject(
   )
 }
 
-case class ViewValue(value: Value) extends Component {
-  def body: HtmlElement = p(
-    roundedBorder,
-    value.value
-  )
-}
-
 case class ViewRelations(
     entity: Entity,
     db: Var[Database],
@@ -71,7 +64,7 @@ def getName(id: Id, db: Var[Database]): String = {
   val namePredicate = e.relations.find(_.predicate == Predicate.name)
   val foundPredicate = namePredicate.orElse(e.references.headOption)
   foundPredicate
-    .map(a => toS(a.`object`))
+    .map(a => toS(a.`object`))//todo check this
     .getOrElse(toS(id))
 }
 
@@ -342,8 +335,8 @@ case class AddPredicateLink(
     case None => div("")
   }
 }
-
-case class SimpleAdd(
+//add S8 case, to add object if predicate is already set
+case class LinkThingButton(
   toThing: Option[Id] = None,
   dbVar: Var[Database],
   e: Relation,
@@ -400,13 +393,13 @@ case class SearchResults(
                 simpleInline,
                 justifyContent.center,
                 viewId(e.subject, dbVar),
-                child <-- inSelection.map(inSelection => if(inSelection) AddPredicateLink(e.subject, dbVar, selectedRelationComp) else SimpleAdd(toThing, dbVar, e, e.subject)),
+                child <-- inSelection.map(inSelection => if(inSelection) AddPredicateLink(e.subject, dbVar, selectedRelationComp) else LinkThingButton(toThing, dbVar, e, e.subject)),
               )),
               _.cell(div(
                 simpleInline,
                 justifyContent.center,
                 viewId(e.predicate, dbVar),
-                child <-- inSelection.map(inSelection => if(inSelection) AddPredicateLink(e.predicate, dbVar, selectedRelationComp) else SimpleAdd(toThing, dbVar, e, e.predicate)),
+                child <-- inSelection.map(inSelection => if(inSelection) AddPredicateLink(e.predicate, dbVar, selectedRelationComp) else LinkThingButton(toThing, dbVar, e, e.predicate)),
               )),
               _.cell(
                 if (viewKind == "reference")
@@ -419,7 +412,7 @@ case class SearchResults(
               _.cell(
                 if (viewKind != "reference")
                   e.`object` match {
-                    case id: URI => SimpleAdd(toThing, dbVar, e, id)
+                    case id: URI => LinkThingButton(toThing, dbVar, e, id)
                     case v: Value => div()
                   }
                 else

@@ -4,6 +4,11 @@ package testvite
 
 //defining functions
 
+//for next time prepare bmi example data
+
+//bmi as predicate
+//special word function as predicate
+
 
 //define computed values lifecycle (computed from functions)
 //for example user navigates to object which has "comoutable link", then he sees computed value
