@@ -16,7 +16,6 @@ case class ViewObject(
   val selectedRelation: Var[Option[SelectedRelation]] = Var(None)
 
   def body: HtmlElement = div(
-    Title("View: ", idToString(entity.id)),
     ViewRelations(entity, db, Some(selectedRelation)),
     ViewReferences(entity.references, db),
   )
@@ -44,7 +43,10 @@ case class ViewReferences(
   )
 }
 
-//if we are showing an id of object with only one relation, "not a name", than we display inner structure in "ID" view
+def isSmallObject(id: Id, db: Database): Option[Relation] =
+  val refs = db.get(id).relations
+  if (refs.size == 1 && refs.head.predicate != Predicate.name) Some(refs.head) else None
+
 def toS(id: Id): String = id match {
   case id: URI   => "ID"
   case id: Value => id.value
@@ -71,7 +73,7 @@ def getName(id: Id, db: Var[Database]): String = {
 //contraints: we cant elaborate on nested object
 //we cant elaborate on functions
 
-def viewId(id: Id, db: Var[Database]): HtmlElement = id match {
+def viewId(id: Id, db: Var[Database], selectedRelationComp: Option[Var[Option[SelectedRelation]]], level: Int = 0): HtmlElement = id match {
   case id: Value =>
     Link(
       marginLeft("1em"),
@@ -80,12 +82,15 @@ def viewId(id: Id, db: Var[Database]): HtmlElement = id match {
       onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
     )
   case id: URI =>
-    Link(
-      marginLeft("1em"),
-      //aLink,
-      s"${getName(id, db)}",
-      onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
-    )
+    isSmallObject(id, db.now()).filter(_ => level == 0) match {
+      case Some(relation) => relationSentence(relation, db, selectedRelationComp, "none", level + 1)
+      case None => Link(
+        marginLeft("1em"),
+        //aLink,
+        s"${getName(id, db)}",
+        onClick --> { _ => Router.router.pushState(MyPage.View(id)) }
+      )
+    } 
 }
 
 def selectRelation(relation: Relation, selectedRelationComp: Option[Var[Option[SelectedRelation]]], position: Position): HtmlElement = {
@@ -103,15 +108,15 @@ def selectRelation(relation: Relation, selectedRelationComp: Option[Var[Option[S
   }
 }
 
-def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationComp: Option[Var[Option[SelectedRelation]]], viewKind: ViewKind): HtmlElement = {
+def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationComp: Option[Var[Option[SelectedRelation]]], viewKind: ViewKind, level: Int = 0): HtmlElement = {
   div(
     simpleInline,
-    viewId(relation.id, dbVar),
-    if (viewKind == "relation") div() else viewId(relation.subject, dbVar),
+    viewId(relation.id, dbVar, selectedRelationComp, level),
+    if (viewKind == "relation") div() else viewId(relation.subject, dbVar, selectedRelationComp, level),
     if(relation.predicate != Predicate.blank) selectRelation(relation, selectedRelationComp, "ExtractObjectSetPredicate") else div(),
-    viewId(relation.predicate, dbVar),
+    viewId(relation.predicate, dbVar, selectedRelationComp, level),
     selectRelation(relation, selectedRelationComp, if(relation.predicate == Predicate.blank) "SetPredicate" else "ExtractObjectToObjectWithNewPredicate"),
-    if (viewKind == "reference") div() else div(simpleInline, viewId(relation.`object`, dbVar), if (relation.predicate != Predicate.blank || relation.`object`.isInstanceOf[Value]) div() else selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")),
+    if (viewKind == "reference") div() else div(simpleInline, viewId(relation.`object`, dbVar, selectedRelationComp, level), if (relation.predicate != Predicate.blank || relation.`object`.isInstanceOf[Value]) div() else selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")),
   )
 }
 

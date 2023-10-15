@@ -64,17 +64,17 @@ case class SearchResults(
         _.slots.columns := Table.column(Label("")),
           children <-- resultsSignal.map(_.map(e =>
             Table.row(
-              _.cell(viewId(e.id, dbVar)),
+              _.cell(viewId(e.id, dbVar, selectedRelationComp)),
               _.cell(if (viewKind == "relation") div() else div(
                 simpleInline,
                 justifyContent.center,
-                viewId(e.subject, dbVar),
+                viewId(e.subject, dbVar, selectedRelationComp),
                 child <-- inSelection.map(inSelection => if(inSelection) AddPredicateLink(e.subject, dbVar, selectedRelationComp) else LinkThingButton(toThing, dbVar, e, e.subject)),
               )),
               _.cell(div(
                 simpleInline,
                 justifyContent.center,
-                viewId(e.predicate, dbVar),
+                viewId(e.predicate, dbVar, selectedRelationComp),
                 child <-- inSelection.map(inSelection => if(inSelection) AddPredicateLink(e.predicate, dbVar, selectedRelationComp) else LinkThingButton(toThing, dbVar, e, e.predicate)),
               )),
               _.cell(
@@ -82,7 +82,7 @@ case class SearchResults(
                   div()
                 else
                   div(
-                    viewId(e.`object`, dbVar),
+                    viewId(e.`object`, dbVar, selectedRelationComp),
                   )
               ),
               _.cell(
