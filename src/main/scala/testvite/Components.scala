@@ -119,7 +119,20 @@ def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationC
     if(relation.predicate != Predicate.blank) selectRelation(relation, selectedRelationComp, "ExtractObjectSetPredicate") else div(),
     viewId(relation.predicate, dbVar, selectedRelationComp, level),
     selectRelation(relation, selectedRelationComp, if(relation.predicate == Predicate.blank) "SetPredicate" else "ExtractObjectToObjectWithNewPredicate"),
-    if (viewKind == "reference") div() else div(simpleInline, viewId(relation.`object`, dbVar, selectedRelationComp, level), if (relation.predicate != Predicate.blank || relation.`object`.isInstanceOf[Value]) div() else selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")),
+    if (viewKind == "reference")
+      div()
+    else
+      div(
+        simpleInline,
+        viewId(relation.`object`, dbVar, selectedRelationComp, level),
+        if (relation.`object`.isInstanceOf[Value])
+          div()
+        else
+          if (relation.predicate == Predicate.blank)
+            selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")
+          else
+            selectRelation(relation, selectedRelationComp, "ExtractObjectToPredicateWithNewObject")
+      ),
   )
 }
 
@@ -159,6 +172,7 @@ case class AddPredicateLink(
             case "ExtractObjectSetPredicate" => Manager.exec(dbVar)(ExtractObjectSetPredicate(sr.relationId, predicateId))
             case "ExtractObjectToObjectWithNewPredicate" => Manager.exec(dbVar)(ExtractObjectToObjectWithNewPredicate(sr.relationId, predicateId))
             case "MoveObjectToPredicateAndSetObject" => Manager.exec(dbVar)(MoveObjectToPredicateAndSetObject(sr.relationId, predicateId))
+            case "ExtractObjectToPredicateWithNewObject" => Manager.exec(dbVar)(ExtractObjectToPredicateWithNewObject(sr.relationId, predicateId))
           }
           case None => //todo
         }
