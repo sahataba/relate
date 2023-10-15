@@ -56,7 +56,6 @@ case class SearchResults(
     Panel(
       _.headerText := "Results",
       Table(
-        _.slots.columns := Table.column(Label("")),
         _.slots.columns := Table.column(Label("Subject")),
         _.slots.columns := Table.column(Label("Predicate")),
         _.slots.columns := Table.column(Label("Object")),
@@ -64,7 +63,6 @@ case class SearchResults(
         _.slots.columns := Table.column(Label("")),
           children <-- resultsSignal.map(_.map(e =>
             Table.row(
-              _.cell(viewId(e.id, dbVar, selectedRelationComp)),
               _.cell(if (viewKind == "relation") div() else div(
                 simpleInline,
                 justifyContent.center,

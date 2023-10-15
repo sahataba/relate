@@ -115,7 +115,6 @@ def selectRelation(relation: Relation, selectedRelationComp: Option[Var[Option[S
 def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationComp: Option[Var[Option[SelectedRelation]]], viewKind: ViewKind, level: Int = 0): HtmlElement = {
   div(
     simpleInline,
-    viewId(relation.id, dbVar, selectedRelationComp, level),
     if (viewKind == "relation") div() else viewId(relation.subject, dbVar, selectedRelationComp, level),
     if(relation.predicate != Predicate.blank) selectRelation(relation, selectedRelationComp, "ExtractObjectSetPredicate") else div(),
     viewId(relation.predicate, dbVar, selectedRelationComp, level),
