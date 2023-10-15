@@ -13,11 +13,16 @@ case class ViewObject(
     entity: Entity,
     db: Var[Database],
 ) extends Component {
-  val selectedRelation: Var[Option[SelectedRelation]] = Var(None)
+  val selectedRelation: Option[Var[Option[SelectedRelation]]] = Some(Var(None))
 
   def body: HtmlElement = div(
-    ViewRelations(entity, db, Some(selectedRelation)),
-    ViewReferences(entity.references, db),
+    display.flex,
+    flexDirection.row,
+    div(
+      ViewRelations(entity, db, selectedRelation),
+      ViewReferences(entity.references, db),
+    ),
+    Add(db, Some(entity.id), selectedRelation)
   )
 }
 
@@ -29,7 +34,6 @@ case class ViewRelations(
   def body: HtmlElement = Panel(
     _.headerText := "Relations",
     entity.relations.toList.map(r => ViewRelation(r, db, selectedRelation, "relation")),
-    Add(db, Some(entity.id), selectedRelation)
   )
 }
 
@@ -119,8 +123,6 @@ def relationSentence(relation: Relation, dbVar: Var[Database], selectedRelationC
     if (viewKind == "reference") div() else div(simpleInline, viewId(relation.`object`, dbVar, selectedRelationComp, level), if (relation.predicate != Predicate.blank || relation.`object`.isInstanceOf[Value]) div() else selectRelation(relation, selectedRelationComp, "MoveObjectToPredicateAndSetObject")),
   )
 }
-
-//inline editing of first level objects
 
 type ViewKind = "relation" | "reference" | "none"
 case class ViewRelation(
