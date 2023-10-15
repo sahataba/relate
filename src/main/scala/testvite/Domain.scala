@@ -10,8 +10,8 @@ case class Relation(
     predicate: URI // finally add option to predicate, check rdf spec
 ) //split object field to two fields
 
-type Relations = Set[Relation]
-type References = Set[Relation]
+type Relations = List[Relation]
+type References = List[Relation]
 case class Value(value: String)
 type Id = URI | Value
 case class Entity(id: URI | Value, relations: Relations, references: References)

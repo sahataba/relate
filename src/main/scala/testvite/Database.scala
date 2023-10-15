@@ -10,15 +10,15 @@ case class Database(private val relations: Set[Relation]):
         case id: URI   => id.value.contains(query)
       }
     })
-    .toList
+    .toList.sortBy(_.predicate.value)
   def get(id: Id): Entity = Entity(
     id = id,
     relations.filter(r => {
       r.`subject` == id
-    }),
+    }).toList.sortBy(_.predicate.value),
     relations.filter(r => {
       r.`object` == id
-    })
+    }).toList.sortBy(_.predicate.value)//sortby is in collision with getName
   )
 
   def getRelation(id: URI) = relations.find(r => r.id == id)
